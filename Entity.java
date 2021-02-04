@@ -2,7 +2,7 @@ import java.awt.Graphics;
 
 public abstract class Entity {
 
-	// Coordinates, origin at bottom left	
+	// Coordinates, origin at top left	
 	protected int x, y;
 	protected int xVelocity, yVelocity;
 	protected EntityID id;

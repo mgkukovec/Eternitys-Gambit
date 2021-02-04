@@ -13,7 +13,7 @@ public class Player extends Entity{
 	}
 
 	public void render(Graphics g) {
-		g.setColor(Color.white);
+		g.setColor(Color.blue);
 		g.fillRect(x, y, 32, 32);
 	}
 	
