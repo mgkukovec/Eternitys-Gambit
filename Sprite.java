@@ -3,9 +3,12 @@ import java.awt.Rectangle;
 
 public abstract class Sprite {
 
+	protected int gravity = 3;
+	protected boolean falling = true;
 	// Coordinates, origin at top left	
 	protected int x, y;
 	protected int xVelocity, yVelocity;
+	protected int xAccel, yAccel;
 	protected int width, height;
 	protected SpriteID id;
 	
@@ -51,6 +54,22 @@ public abstract class Sprite {
 
 	public void setyVelocity(int yVelocity) {
 		this.yVelocity = yVelocity;
+	}
+	
+	public int getxAccel() {
+		return xAccel;
+	}
+	
+	public void setxAccel(int xAccel) {
+		this.xAccel = xAccel;
+	}
+	
+	public int getyAccel() {
+		return yAccel;
+	}
+	
+	public void setyAccel(int yAccel) {
+		this.yAccel = yAccel;
 	}
 
 	public SpriteID getId() {

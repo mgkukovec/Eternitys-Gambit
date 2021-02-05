@@ -46,13 +46,13 @@ public class Player extends Sprite {
 				System.out.println("TOP: " + playerTopOverlap);
 				System.out.println("BOTTOM: " + playerBottomOverlap);
 				
-				
 				//Note: these collisions avoid checking if overlap > 0 because the intersects method guarantees they are all > 0
 				
 				// Bottom of Player collision
-				if (Math.abs(playerBottomOverlap) < Math.abs(playerTopOverlap)) {
+				if (Math.abs(playerBottomOverlap) < Math.abs(playerTopOverlap) && falling == true) {
 					System.out.println("BOTTOM collision");
 					overlappingBottom = true;
+					falling = false;
 				}
 				// Top of Player Collision
 				if (Math.abs(playerTopOverlap) < Math.abs(playerBottomOverlap)) {
@@ -81,7 +81,7 @@ public class Player extends Sprite {
 				} else if (overlappingTop && overlappingRight) {
 					if(playerRightOverlap < playerTopOverlap) {
 						x = tempObject.x - width;
-						System.out.println("Adjusting LEFT, new x: " + x);
+						System.out.println("Adjusting LEFT");
 					} else {
 						System.out.println("Adjusting BOTTOM");
 						y = tempObject.y + tempObject.height;
@@ -99,15 +99,12 @@ public class Player extends Sprite {
 						System.out.println("Adjusting LEFT");
 						x = tempObject.x - width;
 					} else {
-						System.out.println("Adjusting DOWN");
+						System.out.println("Adjusting UP");
 						y = tempObject.y - height;
 					}
 				}
 				System.out.println("");
 				
-				
-				
-
 			}
 		}
 	}
@@ -115,26 +112,33 @@ public class Player extends Sprite {
 	public void tick() {
 
 		xVelocity = 0;
-		yVelocity = 0;
 
-		if (KeyInput.isPressed(KeyEvent.VK_W))
-			yVelocity += -4;
-		if (KeyInput.isPressed(KeyEvent.VK_S))
-			yVelocity += 4;
 		if (KeyInput.isPressed(KeyEvent.VK_A))
 			xVelocity += -4;
 		if (KeyInput.isPressed(KeyEvent.VK_D))
 			xVelocity += 4;
+		if (KeyInput.isPressed(KeyEvent.VK_SPACE) && falling == false) {
+			yVelocity = -30;
+			falling = true;
+		}
+		
+		if(falling) {
+			yVelocity += gravity;
+		}
 
 		x += xVelocity; // Replace using acceleration for running
 		y += yVelocity; // Replace with gravity equation for jumping
-
+		
+		yVelocity = Game.clamp(yVelocity, -20, 20);
+		
+		System.out.println("FALLING " + falling);
 		collision();
+		System.out.println("FALLING " + falling + "\n\n");
 	}
 
 	public void render(Graphics g) {
 		g.setColor(Color.blue);
-		g.fillRect(x, y, 32, 32);
+		g.fillRect(x, y, width, height);
 	}
 
 	public Rectangle getBoundingBox() {

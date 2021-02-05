@@ -21,8 +21,9 @@ public class Game extends Canvas implements Runnable {
 		
 		// This might belong in it's own class
 		// Does each room need it's own class?
-		handler.addSprite(new Player(100, 100, 32, 32, SpriteID.Player, handler));
+		handler.addSprite(new Player(200, 100, 32, 32, SpriteID.Player, handler));
 		handler.addObject(new BasicPlatform(150, 250, 300, 20, ObjectID.BasicPlatform, handler));
+		handler.addObject(new BasicPlatform(150, 190, 200, 20, ObjectID.BasicPlatform, handler));
 	}
 
 	public synchronized void start() {
@@ -99,7 +100,7 @@ public class Game extends Canvas implements Runnable {
 		bs.show();
 	}
 	
-	public int clamp(int value, int min, int max) {
+	public static int clamp(int value, int min, int max) {
 		//return Math.max(min, (Math.min(max, value)));
 		if(value < min) {
 			return min;
