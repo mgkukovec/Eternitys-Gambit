@@ -16,9 +16,13 @@ public class Game extends Canvas implements Runnable {
 	public Game() {
 		handler = new Handler();
 		hud = new PlayerHUD();
-		this.addKeyListener(new KeyInput(handler));
+		this.addKeyListener(new KeyInput());
 		new Window(WIDTH, HEIGHT, "GAME TITLE", this);
-		handler.addEntity(new Player(100, 100, SpriteID.Player));
+		
+		// This might belong in it's own class
+		// Does each room need it's own class?
+		handler.addSprite(new Player(100, 100, 32, 32, SpriteID.Player, handler));
+		handler.addObject(new BasicPlatform(150, 250, 300, 20, ObjectID.BasicPlatform, handler));
 	}
 
 	public synchronized void start() {
@@ -65,7 +69,7 @@ public class Game extends Canvas implements Runnable {
 			// frames is displayed and reset once per second, so displays FPS
 			if (System.currentTimeMillis() - timer > 1000) {
 				timer += 1000;
-				System.out.println("FPS: " + frames);
+				// System.out.println("FPS: " + frames);
 				frames = 0;
 			}
 		}
@@ -96,7 +100,7 @@ public class Game extends Canvas implements Runnable {
 	}
 	
 	public int clamp(int value, int min, int max) {
-			//return Math.max(min, (Math.min(max, value)));
+		//return Math.max(min, (Math.min(max, value)));
 		if(value < min) {
 			return min;
 		}
@@ -105,6 +109,8 @@ public class Game extends Canvas implements Runnable {
 		}
 		return value;
 	}
+	
+	
 
 	public static void main(String[] args) {
 		new Game();
