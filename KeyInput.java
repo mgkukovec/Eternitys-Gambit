@@ -4,16 +4,23 @@ import java.awt.event.KeyEvent;
 public class KeyInput extends KeyAdapter {
 
 	private Handler handler;
+	private static boolean[] pressed;
 
 	public KeyInput(Handler handler) {
 		this.handler = handler;
+		pressed = new boolean[256];
+	}
+	
+	public static boolean isPressed(int keyCode) {
+		return pressed[keyCode];
 	}
 
 	public void keyPressed(KeyEvent e) {
-		int key = e.getKeyCode();
-
-		System.out.println(key);
+		//int key = e.getKeyCode();
+		pressed[e.getKeyCode()] = true;
+		System.out.println((char) e.getKeyCode());
 		
+		/*
 		// Key events for player's character (if loaded)
 		// Checks if player's character is loaded (always first in loadedEntities)
 		if (handler.loadedSprites.get(0).getId() == SpriteID.Player) {
@@ -27,13 +34,19 @@ public class KeyInput extends KeyAdapter {
 			if (key == KeyEvent.VK_D)
 				tempPlayer.setxVelocity(4);
 		}
+		*/
 
 	}
 
 	public void keyReleased(KeyEvent e) {
-		int key = e.getKeyCode();
+		//int key = e.getKeyCode();
+		
+		pressed[e.getKeyCode()] = false;
+		System.out.println((char) e.getKeyCode() + " RELEASED");
 
-		System.out.println(key);
+		//System.out.println((char) key + " RELEASED");
+		
+		/*
 		
 		// Key events for player's character (if loaded)
 		// Checks if player's character is loaded (always first in loadedEntities)
@@ -48,5 +61,6 @@ public class KeyInput extends KeyAdapter {
 			if (key == KeyEvent.VK_D)
 				tempPlayer.setxVelocity(0);
 		}
+		*/
 	}
 }
