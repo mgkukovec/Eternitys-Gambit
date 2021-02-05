@@ -31,26 +31,15 @@ public class Player extends Sprite {
 		for (Object tempObject : handler.loadedObjects) {
 			if (getBoundingBox().intersects(tempObject.getBoundingBox())) {
 
-				int left = x;
-				int right = x + width;
-				int top = y;
-				int bottom = y + height;
-
-				int boxleft = tempObject.x;
-				int boxright = tempObject.x + tempObject.width;
-				int boxtop = tempObject.y;
-				int boxbottom = tempObject.y + tempObject.height;
-
-				int playerLeftOverlap = boxright - left;
-				int playerRightOverlap = right - boxleft;
-				int playerBottomOverlap = bottom - boxtop;
-				int playerTopOverlap = boxbottom - top;
+				int playerLeftOverlap = tempObject.x + tempObject.width - x;
+				int playerRightOverlap = x + width - tempObject.x;
+				int playerBottomOverlap = y + height - tempObject.y;
+				int playerTopOverlap = tempObject.y + tempObject.height - y;
 				
 				boolean overlappingLeft = false;
 				boolean overlappingRight = false;
 				boolean overlappingBottom = false;
 				boolean overlappingTop = false;
-
 				
 				System.out.println("LEFT: " + playerLeftOverlap);
 				System.out.println("RIGHT: " + playerRightOverlap);
