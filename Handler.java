@@ -4,33 +4,33 @@ import java.util.LinkedList;
 public class Handler {
 
 	// Player is always first
-	LinkedList<Entity> loadedEntities = new LinkedList<Entity>();
+	LinkedList<Sprite> loadedSprites = new LinkedList<Sprite>();
 
-	// Update every Entity
+	// Update every Sprite
 	public void tick() {
 		// Potential for error while removing an Entity during loop
-		for (Entity tempEntity : loadedEntities) {
-			tempEntity.tick();
+		for (Sprite tempSprite : loadedSprites) {
+			tempSprite.tick();
 		}
 	}
 
 	// Render every Entity to the screen
 	public void render(Graphics g) {
-		for (Entity tempEntity : loadedEntities) {
-			tempEntity.render(g);
+		for (Sprite tempSprite : loadedSprites) {
+			tempSprite.render(g);
 		}
 	}
 
-	public void addEntity(Entity entity) {
-		if (entity instanceof Player) {
-			this.loadedEntities.addFirst(entity);
+	public void addEntity(Sprite sprite) {
+		if (sprite instanceof Player) {
+			this.loadedSprites.addFirst(sprite);
 		} else {
-			this.loadedEntities.add(entity);
+			this.loadedSprites.add(sprite);
 		}
 	}
 
-	public void removeEntity(Entity entity) {
-		this.loadedEntities.remove(entity);
+	public void removeEntity(Sprite sprite) {
+		this.loadedSprites.remove(sprite);
 	}
 
 }

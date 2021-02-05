@@ -16,8 +16,8 @@ public class KeyInput extends KeyAdapter {
 		
 		// Key events for player's character (if loaded)
 		// Checks if player's character is loaded (always first in loadedEntities)
-		if (handler.loadedEntities.get(0).getId() == EntityID.Player) {
-			Entity tempPlayer = handler.loadedEntities.get(0);
+		if (handler.loadedSprites.get(0).getId() == SpriteID.Player) {
+			Sprite tempPlayer = handler.loadedSprites.get(0);
 			if (key == KeyEvent.VK_W)
 				tempPlayer.setyVelocity(-4);
 			if (key == KeyEvent.VK_S)
@@ -37,8 +37,8 @@ public class KeyInput extends KeyAdapter {
 		
 		// Key events for player's character (if loaded)
 		// Checks if player's character is loaded (always first in loadedEntities)
-		if (handler.loadedEntities.get(0).getId() == EntityID.Player) {
-			Entity tempPlayer = handler.loadedEntities.get(0);
+		if (handler.loadedSprites.get(0).getId() == SpriteID.Player) {
+			Sprite tempPlayer = handler.loadedSprites.get(0);
 			if (key == KeyEvent.VK_W)
 				tempPlayer.setyVelocity(0);
 			if (key == KeyEvent.VK_S)
