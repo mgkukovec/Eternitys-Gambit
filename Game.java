@@ -22,8 +22,10 @@ public class Game extends Canvas implements Runnable {
 		// This might belong in it's own class
 		// Does each room need it's own class?
 		handler.addSprite(new Player(200, 100, 32, 32, SpriteID.Player, handler));
-		handler.addObject(new BasicPlatform(150, 150, 300, 10, ObjectID.BasicPlatform, handler));
-		//handler.addObject(new BasicPlatform(150, 190, 200, 10, ObjectID.BasicPlatform, handler));
+		handler.addObject(new BasicPlatform(150, 300, 300, 10, ObjectID.BasicPlatform, handler));
+		handler.addObject(new BasicPlatform(350, 250, 50, 10, ObjectID.BasicPlatform, handler));
+		handler.addObject(new BasicPlatform(470, 200, 50, 10, ObjectID.BasicPlatform, handler));
+		handler.addObject(new BasicPlatform(350, 110, 50, 10, ObjectID.BasicPlatform, handler));
 		handler.addObject(new BasicPlatform(300, 50, 20, 200, ObjectID.BasicPlatform, handler));
 	}
 
@@ -71,7 +73,7 @@ public class Game extends Canvas implements Runnable {
 			// frames is displayed and reset once per second, so displays FPS
 			if (System.currentTimeMillis() - timer > 1000) {
 				timer += 1000;
-				// System.out.println("FPS: " + frames);
+				System.out.println("FPS: " + frames);
 				frames = 0;
 			}
 		}

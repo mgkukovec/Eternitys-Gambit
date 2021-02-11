@@ -1,37 +1,26 @@
 import java.awt.Rectangle;
+import java.awt.Point;
 
 public class CollisionDetection {
 
-	public static Rectangle rayBasedCollisionAdjustment(Sprite p, int prevX, int prevY, Rectangle o) {
+	public static Rectangle resolveSpriteObjectCollision(Sprite s, Object o) {
 
-		Sprite s = new Player(p.x + (p.width / 2), p.y + (p.height / 2), p.width, p.height, SpriteID.Player, null);
-		Rectangle r = new Rectangle(o.x - (p.width / 2), o.y - (p.height / 2), o.width + p.width, o.height + p.height);
+		Point sCenter = new Point(s.x + (s.width / 2), s.y + (s.height / 2));
+		Point sCenterPrev = new Point(s.prevX + s.width / 2, s.prevY + s.height / 2);
+		
+		// Extend the object by half p.width and p.height to check against sCenter
+		Rectangle r = new Rectangle(o.x - (s.width / 2) + 1, o.y - (s.height / 2) + 1, o.width + s.width - 2, o.height + s.height - 2);
 
-		prevX += p.width / 2;
-		prevY += p.height / 2;
+		// Change in x and y
+		double dirX = sCenter.x - sCenterPrev.x;
+		double dirY = sCenter.y - sCenterPrev.y;
 
-		double dirX = (double) s.x - prevX;
-		double dirY = (double) s.y - prevY;
-
-		// NOT coordinates
-		// t represents the unit distance along the ray, usually between 0 and 1
-		double NEARtx = (dirX == 0) ? (r.x - prevX) / 0.000000001 : (r.x - prevX) / dirX;
-		double FARtx = (dirX == 0) ? (r.x + r.width - prevX) / 0.000000001 : (r.x + r.width - prevX) / dirX;
-		double NEARty = (dirY == 0) ? (r.y - prevY) / 0.000000001 : (r.y - prevY) / dirY;
-		double FARty = (dirY == 0) ? (r.y + r.height - prevY) / 0.000000001 : (r.y + r.height - prevY) / dirY;
-
-		if (NEARtx > 1000 || NEARtx < -1000) {
-			NEARtx = Integer.MAX_VALUE * Math.signum(NEARtx);
-		}
-		if (FARtx > 1000 || FARtx < -1000) {
-			FARtx = Integer.MAX_VALUE * Math.signum(FARtx);
-		}
-		if (NEARty > 1000 || NEARty < -1000) {
-			NEARty = Integer.MAX_VALUE * Math.signum(NEARty);
-		}
-		if (FARty > 1000 || FARty < -1000) {
-			FARty = Integer.MAX_VALUE * Math.signum(FARty);
-		}
+		// t value of collision between (prevX, prevY) = 0 and (p.x, p.y) = 1
+		// If dividing by 0, set to +/- infinity
+		double NEARtx = (dirX == 0) ? Integer.MAX_VALUE * Math.signum(r.x - sCenterPrev.x) : (r.x - sCenterPrev.x) / dirX;
+		double FARtx = (dirX == 0) ? Integer.MAX_VALUE * Math.signum(r.x + r.width - sCenterPrev.x) : (r.x + r.width - sCenterPrev.x) / dirX;
+		double NEARty = (dirY == 0) ? Integer.MAX_VALUE * Math.signum(r.y - sCenterPrev.y) : (r.y - sCenterPrev.y) / dirY;
+		double FARty = (dirY == 0) ? Integer.MAX_VALUE * Math.signum(r.y + r.height - sCenterPrev.y) : (r.y + r.height - sCenterPrev.y) / dirY;
 
 		// Sort near and far t values
 		if (NEARtx > FARtx) {
@@ -45,134 +34,41 @@ public class CollisionDetection {
 			FARty = temp;
 		}
 
+		// No collision
 		if (NEARtx > FARty || NEARty > FARtx) {
-			return p.getBoundingBox();
+			return s.getBoundingBox();
 		}
 
-		// the t value of the collision along the ray
+		// t value of the collision along the ray
 		double nearCollisionT = Math.max(NEARtx, NEARty);
 		double farCollisionT = Math.min(FARtx, FARty);
 
 		// Coordinates of collision
-		int collisionX = prevX + (int) (dirX * nearCollisionT);
-		int collisionY = prevY + (int) (dirY * nearCollisionT);
+		Point collision = new Point(sCenterPrev.x + (int) (dirX * nearCollisionT), sCenterPrev.y + (int) (dirY * nearCollisionT));
 
+		// No collision, collision is behind the original position or in front of new position
 		if (farCollisionT < 0 || nearCollisionT > 1) {
-			return p.getBoundingBox();
+			return s.getBoundingBox();
 		}
 
-		int contactNormalX = 0;
-		int contactNormalY = 0;
-
+		// Unit direction adjustment needs to occur
+		Point collisionNormal = new Point(0, 0);
 		if (NEARtx > NEARty) {
-			if (dirX < 0) {
-				contactNormalX = 1;
-				contactNormalY = 0;
-			} else {
-				contactNormalX = -1;
-				contactNormalY = 0;
-			}
+			if (dirX < 0)
+				collisionNormal.setLocation(1, 0);
+			else
+				collisionNormal.setLocation(-1, 0);
 		} else if (NEARtx < NEARty) {
-			if (dirY < 0) {
-				contactNormalX = 0;
-				contactNormalY = 1;
-			} else {
-				contactNormalX = 0;
-				contactNormalY = -1;
-			}
+			if (dirY < 0)
+				collisionNormal.setLocation(0, 1);
+			else
+				collisionNormal.setLocation(0, -1);
 		}
 
-		return new Rectangle(s.x + (contactNormalX * Math.abs(s.x - collisionX - contactNormalX)) - (s.width / 2),
-							 s.y + (contactNormalY * Math.abs(s.y - collisionY - contactNormalY)) - (s.height / 2),
+		// Return resolved position, adjusted from center to top-left
+		return new Rectangle(sCenter.x + (collisionNormal.x * Math.abs(sCenter.x - collision.x - collisionNormal.x)) - (s.width / 2),
+							 sCenter.y + (collisionNormal.y * Math.abs(sCenter.y - collision.y - collisionNormal.y)) - (s.height / 2),
 							 s.width,
 							 s.height);
-	}
-
-	public static boolean collisionAdjustment(Sprite s, Object o) {
-
-		int playerLeftOverlap = o.x + o.width - s.x;
-		int playerRightOverlap = s.x + s.width - o.x;
-		int playerBottomOverlap = s.y + s.height - o.y;
-		int playerTopOverlap = o.y + o.height - s.y;
-
-		boolean overlappingLeft = false;
-		boolean overlappingRight = false;
-		boolean overlappingBottom = false;
-		boolean overlappingTop = false;
-
-		System.out.println("LEFT: " + playerLeftOverlap);
-		System.out.println("RIGHT: " + playerRightOverlap);
-		System.out.println("TOP: " + playerTopOverlap);
-		System.out.println("BOTTOM: " + playerBottomOverlap);
-
-		// Note: these collisions avoid checking if overlap > 0 because the intersects
-		// method guarantees they are all > 0
-
-		// Bottom of Player collision
-		if (Math.abs(playerBottomOverlap) < Math.abs(playerTopOverlap)) {// && s.falling == true) {
-			System.out.println("BOTTOM collision");
-			overlappingBottom = true;
-			s.falling = false;
-		} else {
-			s.falling = true;
-		}
-		// Top of Player Collision
-		if (Math.abs(playerTopOverlap) < Math.abs(playerBottomOverlap)) {
-			System.out.println("TOP collision");
-			overlappingTop = true;
-		}
-		// Right of Player Collision
-		if (Math.abs(playerRightOverlap) < Math.abs(playerLeftOverlap)) {
-			System.out.println("RIGHT collision");
-			overlappingRight = true;
-		}
-		// Left of Player Collision
-		if (Math.abs(playerLeftOverlap) < Math.abs(playerRightOverlap)) {
-			System.out.println("LEFT collision");
-			overlappingLeft = true;
-		}
-
-		if (overlappingTop && overlappingLeft) {
-			if (playerLeftOverlap < playerTopOverlap) {
-				System.out.println("Adjusting RIGHT");
-				s.x = o.x + o.width;
-			} else {
-				System.out.println("Adjusting DOWN");
-				s.yVelocity = o.Vy;
-				s.y = o.y + o.height;
-			}
-		} else if (overlappingTop && overlappingRight) {
-			if (playerRightOverlap < playerTopOverlap) {
-				s.x = o.x - s.width;
-				System.out.println("Adjusting LEFT 1");
-			} else {
-				System.out.println("Adjusting DOWN");
-				s.yVelocity = o.Vy;
-				s.y = o.y + o.height;
-			}
-		} else if (overlappingBottom && overlappingLeft) {
-			if (playerLeftOverlap < playerBottomOverlap) {
-				System.out.println("Adjusting RIGHT");
-				s.x = o.x + o.width;
-			} else {
-				System.out.println("Adjusting UP");
-				s.y = o.y - s.height;
-			}
-		} else {
-			if (playerRightOverlap < playerBottomOverlap) {
-				System.out.println("Adjusting LEFT 2");
-				s.x = o.x - s.width;
-			} else {
-				System.out.println("Adjusting UP");
-				s.y = o.y - s.height;
-			}
-		}
-
-		System.out.println("");
-		if (!overlappingLeft && !overlappingRight && !overlappingTop && !overlappingBottom) {
-			return false;
-		} else {
-			return true;
-		}
 	}
 }

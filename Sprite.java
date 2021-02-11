@@ -3,8 +3,8 @@ import java.awt.Rectangle;
 
 public abstract class Sprite {
 
-	protected int gravity = 0;
-	protected boolean falling = true;
+	protected int gravity = 3;
+	protected boolean falling;
 	// Coordinates, origin at top left	
 	protected int x, y;
 	protected int prevX, prevY;
@@ -19,6 +19,7 @@ public abstract class Sprite {
 		this.width = width;
 		this.height = height;
 		this.id = id;
+		falling = true;
 	}
 	
 	public abstract void tick();
