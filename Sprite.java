@@ -3,10 +3,11 @@ import java.awt.Rectangle;
 
 public abstract class Sprite {
 
-	protected int gravity = 3;
+	protected int gravity = 0;
 	protected boolean falling = true;
 	// Coordinates, origin at top left	
 	protected int x, y;
+	protected int prevX, prevY;
 	protected int xVelocity, yVelocity;
 	protected int xAccel, yAccel;
 	protected int width, height;
@@ -22,7 +23,6 @@ public abstract class Sprite {
 	
 	public abstract void tick();
 	public abstract void render(Graphics g);
-	public abstract Rectangle getBoundingBox();
 
 	public int getX() {
 		return x;
@@ -38,6 +38,22 @@ public abstract class Sprite {
 
 	public void setY(int y) {
 		this.y = y;
+	}
+	
+	public int getPrevX() {
+		return prevX;
+	}
+
+	public void setPrevX(int prevX) {
+		this.prevX = prevX;
+	}
+
+	public int getPrevY() {
+		return prevY;
+	}
+
+	public void setPrevY(int prevY) {
+		this.prevY = prevY;
 	}
 
 	public int getxVelocity() {
@@ -78,5 +94,9 @@ public abstract class Sprite {
 
 	public void setId(SpriteID id) {
 		this.id = id;
+	}
+	
+	public Rectangle getBoundingBox() {
+		return new Rectangle(x, y, width, height);
 	}
 }

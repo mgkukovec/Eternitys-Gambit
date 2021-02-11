@@ -10,6 +10,8 @@ public class BasicPlatform extends Object {
 		this.width = width;
 		this.height = height;
 		this.id = id;
+		Vx = 0;
+		Vy = 0;
 	}
 
 	public void tick() {
@@ -19,10 +21,6 @@ public class BasicPlatform extends Object {
 	public void render(Graphics g) {
 		g.setColor(Color.MAGENTA);
 		g.fillRect(x, y, width, height);
-	}
-
-	public Rectangle getBoundingBox() {
-		return new Rectangle(x, y, width, height);
 	}
 
 }

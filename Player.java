@@ -15,7 +15,7 @@ public class Player extends Sprite {
 	// Not every Sprite will have the same collision
 	// Enemies do not deal damage to each other
 	// Some enemies can ignore platforms
-	private void collision() {
+	private void collision(int prevX, int prevY) {
 		// Collision with Enemies
 		for (Sprite tempSprite : handler.loadedSprites) {
 			if (tempSprite.getId() == SpriteID.Enemy) {
@@ -29,94 +29,26 @@ public class Player extends Sprite {
 
 		// Collision with Object
 		for (Object tempObject : handler.loadedObjects) {
-			if (getBoundingBox().intersects(tempObject.getBoundingBox())) {
-
-				int playerLeftOverlap = tempObject.x + tempObject.width - x;
-				int playerRightOverlap = x + width - tempObject.x;
-				int playerBottomOverlap = y + height - tempObject.y;
-				int playerTopOverlap = tempObject.y + tempObject.height - y;
+				Rectangle position = CollisionDetection.rayBasedCollisionAdjustment(this, prevX, prevY, tempObject.getBoundingBox());
+				this.x = position.x;
+				this.y = position.y;
 				
-				boolean overlappingLeft = false;
-				boolean overlappingRight = false;
-				boolean overlappingBottom = false;
-				boolean overlappingTop = false;
-				
-				System.out.println("LEFT: " + playerLeftOverlap);
-				System.out.println("RIGHT: " + playerRightOverlap);
-				System.out.println("TOP: " + playerTopOverlap);
-				System.out.println("BOTTOM: " + playerBottomOverlap);
-				
-				//Note: these collisions avoid checking if overlap > 0 because the intersects method guarantees they are all > 0
-				
-				// Bottom of Player collision
-				if (Math.abs(playerBottomOverlap) < Math.abs(playerTopOverlap) && falling == true) {
-					System.out.println("BOTTOM collision");
-					overlappingBottom = true;
-					falling = false;
-				}
-				// Top of Player Collision
-				if (Math.abs(playerTopOverlap) < Math.abs(playerBottomOverlap)) {
-					System.out.println("TOP collision");
-					overlappingTop = true;
-				}
-				// Right of Player Collision
-				if (Math.abs(playerRightOverlap) < Math.abs(playerLeftOverlap)) {
-					System.out.println("RIGHT collision");
-					overlappingRight = true;
-				}
-				// Left of Player Collision
-				if (Math.abs(playerLeftOverlap) < Math.abs(playerRightOverlap)) {
-					System.out.println("LEFT collision");
-					overlappingLeft = true;
-				}
-				
-				if(overlappingTop && overlappingLeft) {
-					if(playerLeftOverlap < playerTopOverlap) {
-						System.out.println("Adjusting RIGHT");
-						x = tempObject.x + tempObject.width;
-					} else {
-						System.out.println("Adjusting DOWN");
-						y = tempObject.y + tempObject.height;
-					}
-				} else if (overlappingTop && overlappingRight) {
-					if(playerRightOverlap < playerTopOverlap) {
-						x = tempObject.x - width;
-						System.out.println("Adjusting LEFT");
-					} else {
-						System.out.println("Adjusting BOTTOM");
-						y = tempObject.y + tempObject.height;
-					}
-				} else if (overlappingBottom && overlappingLeft) {
-					if(playerLeftOverlap < playerBottomOverlap) {
-						System.out.println("Adjusting RIGHT");
-						x = tempObject.x + tempObject.width;
-					} else {
-						System.out.println("Adjusting UP");
-						y = tempObject.y - height;
-					}
-				} else {
-					if(playerRightOverlap < playerBottomOverlap) {
-						System.out.println("Adjusting LEFT");
-						x = tempObject.x - width;
-					} else {
-						System.out.println("Adjusting UP");
-						y = tempObject.y - height;
-					}
-				}
-				System.out.println("");
-				
-			}
 		}
 	}
 
 	public void tick() {
 
 		xVelocity = 0;
+		yVelocity = 0;
 
 		if (KeyInput.isPressed(KeyEvent.VK_A))
-			xVelocity += -4;
+			xVelocity += -7;
 		if (KeyInput.isPressed(KeyEvent.VK_D))
-			xVelocity += 4;
+			xVelocity += 7;
+		if (KeyInput.isPressed(KeyEvent.VK_W))
+			yVelocity += -7;
+		if (KeyInput.isPressed(KeyEvent.VK_S))
+			yVelocity += 7;
 		if (KeyInput.isPressed(KeyEvent.VK_SPACE) && falling == false) {
 			yVelocity = -30;
 			falling = true;
@@ -126,23 +58,29 @@ public class Player extends Sprite {
 			yVelocity += gravity;
 		}
 
+		this.setPrevX(x);
+		this.setPrevY(y);
+		
+		yVelocity = Game.clamp(yVelocity, -20, 12);
+		
 		x += xVelocity; // Replace using acceleration for running
 		y += yVelocity; // Replace with gravity equation for jumping
 		
-		yVelocity = Game.clamp(yVelocity, -20, 20);
+		//System.out.println("\nPREVIOUS (" + prevX + ", " + prevY + ")");
+		//System.out.println("NEW (" + x + ", " + y + ")");
 		
-		System.out.println("FALLING " + falling);
-		collision();
-		System.out.println("FALLING " + falling + "\n\n");
+		int preCollisionX = x;
+		int preCollisionY = y;
+		
+		collision(prevX, prevY);
+			//falling = true;
+		
+		x = Game.clamp(x, Math.min(prevX, preCollisionX), Math.max(prevX, preCollisionX));
+		y = Game.clamp(y, Math.min(prevY, preCollisionY), Math.max(prevY, preCollisionY));
 	}
 
 	public void render(Graphics g) {
 		g.setColor(Color.blue);
 		g.fillRect(x, y, width, height);
 	}
-
-	public Rectangle getBoundingBox() {
-		return new Rectangle(x, y, width, height);
-	}
-
 }

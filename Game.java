@@ -22,8 +22,9 @@ public class Game extends Canvas implements Runnable {
 		// This might belong in it's own class
 		// Does each room need it's own class?
 		handler.addSprite(new Player(200, 100, 32, 32, SpriteID.Player, handler));
-		handler.addObject(new BasicPlatform(150, 250, 300, 20, ObjectID.BasicPlatform, handler));
-		handler.addObject(new BasicPlatform(150, 190, 200, 20, ObjectID.BasicPlatform, handler));
+		handler.addObject(new BasicPlatform(150, 150, 300, 10, ObjectID.BasicPlatform, handler));
+		//handler.addObject(new BasicPlatform(150, 190, 200, 10, ObjectID.BasicPlatform, handler));
+		handler.addObject(new BasicPlatform(300, 50, 20, 200, ObjectID.BasicPlatform, handler));
 	}
 
 	public synchronized void start() {
@@ -45,7 +46,7 @@ public class Game extends Canvas implements Runnable {
 	public void run() {
 		this.requestFocus();
 		long timeLast = System.nanoTime();
-		int ticksPerSecond = 60;
+		int ticksPerSecond = 30;
 		double nsPerTick = 1000000000.0 / ticksPerSecond;
 		double delta = 0; // units "tick"
 		long timer = System.currentTimeMillis();

@@ -6,7 +6,8 @@ public class PlayerHUD {
 	public static int playerHealth = 100;
 	
 	public void tick() {
-		
+		// Update everything on the HUD?
+		// damage might do this already, may not even need a tick method
 	}
 	
 	public void render(Graphics g) {
