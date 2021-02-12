@@ -2,6 +2,7 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
 
 public class Game extends Canvas implements Runnable {
 
@@ -12,6 +13,7 @@ public class Game extends Canvas implements Runnable {
 	private boolean running = false;
 	private Handler handler;
 	private PlayerHUD hud;
+	public BufferedImage spriteSheet;
 
 	public Game() {
 		handler = new Handler();
@@ -19,14 +21,15 @@ public class Game extends Canvas implements Runnable {
 		this.addKeyListener(new KeyInput());
 		new Window(WIDTH, HEIGHT, "GAME TITLE", this);
 		
+		BufferedImageLoader imageLoader = new BufferedImageLoader();
+		spriteSheet = imageLoader.loadImage("/spriteSheet.png");
+		
 		// This might belong in it's own class
 		// Does each room need it's own class?
-		handler.addSprite(new Player(200, 100, 32, 32, SpriteID.Player, handler));
-		handler.addObject(new BasicPlatform(150, 300, 300, 10, ObjectID.BasicPlatform, handler));
+		handler.addSprite(new Player(200, 100, 60, 90, SpriteID.Player, handler, spriteSheet));
+		handler.addObject(new BasicPlatform(150, 300, 300, 1, ObjectID.BasicPlatform, handler));
 		handler.addObject(new BasicPlatform(350, 250, 50, 10, ObjectID.BasicPlatform, handler));
-		handler.addObject(new BasicPlatform(470, 200, 50, 10, ObjectID.BasicPlatform, handler));
-		handler.addObject(new BasicPlatform(350, 110, 50, 10, ObjectID.BasicPlatform, handler));
-		handler.addObject(new BasicPlatform(300, 50, 20, 200, ObjectID.BasicPlatform, handler));
+		handler.addObject(new BasicPlatform(150, 220, 50, 10, ObjectID.BasicPlatform, handler));
 	}
 
 	public synchronized void start() {

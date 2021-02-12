@@ -1,5 +1,6 @@
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 
 public abstract class Sprite {
 
@@ -12,6 +13,7 @@ public abstract class Sprite {
 	protected int xAccel, yAccel;
 	protected int width, height;
 	protected SpriteID id;
+	protected BufferedImage spriteModel;
 	
 	public Sprite(int x, int y, int width, int height, SpriteID id) {
 		this.x = x;

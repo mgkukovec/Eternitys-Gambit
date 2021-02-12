@@ -2,14 +2,18 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 
 public class Player extends Sprite {
 
 	Handler handler;
 
-	public Player(int x, int y, int width, int height, SpriteID id, Handler handler) {
+	public Player(int x, int y, int width, int height, SpriteID id, Handler handler, BufferedImage ss) {
 		super(x, y, width, height, id);
 		this.handler = handler;
+		
+		SpriteSheet spriteSheet = new SpriteSheet(ss);
+		spriteModel = spriteSheet.grabImage(1, 1, 60, 90, 60, 90);
 	}
 
 	// Not every Sprite will have the same collision
@@ -103,5 +107,6 @@ public class Player extends Sprite {
 	public void render(Graphics g) {
 		g.setColor(Color.blue);
 		g.fillRect(x, y, width, height);
+		g.drawImage(spriteModel, x, y, null);
 	}
 }
