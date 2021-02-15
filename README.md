@@ -1,4 +1,4 @@
-# Eternity's Gambit
+# Miss Adventure
 A game I might maybe develop
 
 ## TODO
