@@ -1,6 +1,7 @@
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 
@@ -14,10 +15,13 @@ public class Game extends Canvas implements Runnable {
 	private Handler handler;
 	private PlayerHUD hud;
 	public BufferedImage spriteSheet;
+	private Camera camera;
 
 	public Game() {
 		handler = new Handler();
 		hud = new PlayerHUD();
+		camera = new Camera(0, 0);
+		
 		this.addKeyListener(new KeyInput());
 		new Window(WIDTH, HEIGHT, "GAME TITLE", this);
 		
@@ -26,7 +30,7 @@ public class Game extends Canvas implements Runnable {
 		
 		// This might belong in it's own class
 		// Does each room need it's own class?
-		handler.addSprite(new Player(200, 100, 60, 90, SpriteID.Player, handler, spriteSheet));
+		handler.addSprite(new Player(150, 100, 60, 90, SpriteID.Player, handler, spriteSheet));
 		handler.addObject(new BasicPlatform(150, 300, 300, 1, ObjectID.BasicPlatform, handler));
 		handler.addObject(new BasicPlatform(350, 250, 50, 10, ObjectID.BasicPlatform, handler));
 		handler.addObject(new BasicPlatform(150, 220, 50, 10, ObjectID.BasicPlatform, handler));
@@ -86,6 +90,14 @@ public class Game extends Canvas implements Runnable {
 	private void tick() {
 		handler.tick();
 		hud.tick();
+		
+		// Player should be the first object in this list
+		for(int i = 0; i < handler.loadedSprites.size(); i++) {
+			if(handler.loadedSprites.get(i).getId() == SpriteID.Player) {
+				camera.tick(handler.loadedSprites.get(i));
+				break;
+			}
+		}
 	}
 
 	private void render() {
@@ -95,11 +107,19 @@ public class Game extends Canvas implements Runnable {
 			return;
 		}
 		Graphics g = bs.getDrawGraphics();
+		Graphics2D g2d = (Graphics2D) g;
 
+		// Background
 		g.setColor(Color.black);
 		g.fillRect(0, 0, WIDTH, HEIGHT);
+		
+		// Anything between these two statements will be affected by the camera
+		g2d.translate(camera.getX(), camera.getY());
 
 		handler.render(g);
+		
+		g2d.translate(-camera.getX(), -camera.getY());
+		
 		hud.render(g);
 		
 		g.dispose();
