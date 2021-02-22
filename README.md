@@ -18,3 +18,5 @@ Intelligent basic enemy
 Action cycles for sprites
 
 Angular Collision
+
+Different hitbox for collision and damage
