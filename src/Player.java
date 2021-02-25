@@ -38,25 +38,32 @@ public class Player extends Sprite {
 	private boolean collisionWithObjects() {
 		// create a list of some kind to hold all the objects that MIGHT cause collision
 		boolean collision = false;
+		falling = true;
+		this.standingOn = null;
 		
-		for (Object tempObject : handler.loadedObjects) {
-				Rectangle position = CollisionDetection.resolveSpriteObjectCollision(this, tempObject);
-				if(this.x != position.x || this.y != position.y) {
+		for (Object o : handler.loadedObjects) {
+				Rectangle resolvedPos = CollisionDetection.resolveSpriteObjectCollision(this, o);
+				if (this.x != resolvedPos.x || this.y != resolvedPos.y) {
 					collision = true;
 					// Potentially deal damage to player or affect in another way (spikes)
+					if (this.y > resolvedPos.y) {
+						// Collision with ground
+						falling = false;
+					} else if (this.y < resolvedPos.y) {
+						// Collision with ceiling
+						yVelocity = 0;
+					}
 				}
-				if(this.y > position.y) {
-					// Collision with ground
+				
+				this.x = resolvedPos.x;
+				this.y = resolvedPos.y;
+				
+				// On top of tempObject
+				if(this.y + this.height == o.y && !((this.x < o.x && this.x + this.width < o.x) || (this.x > o.x + o.width && this.x + this.width > o.x + o.width))) {
+					collision = true;
 					falling = false;
-				} else if(this.y < position.y) {
-					// Collision with ceiling
-					yVelocity = 0;
+					this.standingOn = o.id;
 				}
-				this.x = position.x;
-				this.y = position.y;
-		}
-		if (collision == false) {
-			falling = true;
 		}
 		return collision;
 	}
@@ -77,10 +84,6 @@ public class Player extends Sprite {
 			xVelocity += 9;
 			facingRight = true;
 		}
-		if (KeyInput.isPressed(KeyEvent.VK_W))
-			yVelocity += -9;
-		if (KeyInput.isPressed(KeyEvent.VK_S))
-			yVelocity += 9;
 		if (KeyInput.isPressed(KeyEvent.VK_SPACE) && falling == false) {
 			yVelocity = -30;
 			falling = true;
@@ -103,26 +106,20 @@ public class Player extends Sprite {
 		x += xVelocity; // Replace using acceleration for running
 		y += yVelocity; // Replace with gravity equation for jumping
 		
-		//System.out.println("\nPREVIOUS (" + prevX + ", " + prevY + ")");
-		//System.out.println("NEW (" + x + ", " + y + ")");
+		inCollision = collisionWithObjects();
 		
-		//int preCollisionX = x;
-		//int preCollisionY = y;
 		
-		collisionWithObjects();
-			//falling = true;
-		
-		//x = Game.clamp(x, Math.min(prevX, preCollisionX), Math.max(prevX, preCollisionX));
-		//y = Game.clamp(y, Math.min(prevY, preCollisionY), Math.max(prevY, preCollisionY));
 	}
 
 	public void render(Graphics g) {
-		g.setColor(Color.blue);
-		g.fillRect(x, y, width, height);
-		
 		if(facingRight)
 			g.drawImage(spriteModel, x, y, width, height, null);
 		else
 			g.drawImage(spriteModel, x + width, y, -width, height, null);
+		
+		if(PlayerHUD.debugMode) {
+			g.setColor(Color.white);
+			g.drawRect(x, y, width, height);
+		}
 	}
 }

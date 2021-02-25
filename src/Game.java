@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 
 public class Game extends Canvas implements Runnable {
 	public static final int WIDTH = 640, HEIGHT = WIDTH / 16 * 9;
-	public static int FPS;
+	public static int FPS = 0;
 	public static int TPS = 30;
 	public static int FPSmax = 60;
 	
@@ -34,7 +34,7 @@ public class Game extends Canvas implements Runnable {
 		// Does each room need it's own class?
 		handler.addSprite(new Player(150, 100, 60, 90, SpriteID.Player, handler, spriteSheet));
 		handler.addObject(new BasicPlatform(150, 300, 300, 1, ObjectID.BasicPlatform, handler));
-		handler.addObject(new BasicPlatform(350, 250, 50, 10, ObjectID.BasicPlatform, handler));
+		handler.addObject(new BasicPlatform(350, 150, 50, 40, ObjectID.BasicPlatform, handler));
 		handler.addObject(new BasicPlatform(150, 220, 50, 10, ObjectID.BasicPlatform, handler));
 	}
 

@@ -20,6 +20,11 @@ public class BasicPlatform extends Object {
 	public void render(Graphics g) {
 		g.setColor(Color.MAGENTA);
 		g.fillRect(x, y, width, height);
+		
+		if(PlayerHUD.debugMode) {
+			g.setColor(Color.white);
+			g.drawRect(x, y, width, height);
+		}
 	}
 
 }

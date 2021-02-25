@@ -5,6 +5,8 @@ import java.awt.image.BufferedImage;
 public abstract class Sprite {
 
 	protected int gravity = 3;
+	protected boolean inCollision = false;
+	protected ObjectID standingOn;
 	protected boolean falling;
 	protected boolean facingRight;
 	// Coordinates, origin at top left	
@@ -25,6 +27,7 @@ public abstract class Sprite {
 		this.id = id;
 		falling = true;
 		facingRight = true;
+		standingOn = null;
 	}
 	
 	public abstract void tick();
