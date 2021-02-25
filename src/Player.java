@@ -87,10 +87,10 @@ public class Player extends Sprite {
 		}
 		
 		// Debug
-		if (KeyInput.isPressed(KeyEvent.VK_F3) && PlayerHUD.debugToggle == false) {
+		if (KeyInput.isPressed(KeyEvent.VK_F3) && PlayerHUD.pressingDebugKeyOnLastCheck == false) {
 			PlayerHUD.debugMode = !PlayerHUD.debugMode;
 		}
-		PlayerHUD.debugToggle = KeyInput.isPressed(KeyEvent.VK_F3);
+		PlayerHUD.pressingDebugKeyOnLastCheck = KeyInput.isPressed(KeyEvent.VK_F3);
 		
 		if(falling) {
 			yVelocity += gravity;

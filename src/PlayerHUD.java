@@ -5,7 +5,7 @@ import java.awt.Graphics;
 public class PlayerHUD {
 
 	public static boolean debugMode = false;
-	public static boolean debugToggle = false;
+	public static boolean pressingDebugKeyOnLastCheck = false;
 	
 	public void tick() {
 		// Update everything on the HUD?
@@ -20,9 +20,10 @@ public class PlayerHUD {
 			g.setFont(new Font("TimesRoman", Font.PLAIN, 20));
 			g.setColor(Color.white);
 			g.drawString("(" + player.x + ", " + player.y + ")", 7, 20);
-			g.drawString("Health:   " + player.health, 7, 40);
-			g.drawString("Falling:  " + player.falling, 7, 60);
+			g.drawString("Health:    " + player.health, 7, 40);
+			g.drawString("Falling:   " + player.falling, 7, 60);
 			g.drawString("Velocity: (" + player.xVelocity + ", " + player.yVelocity + ")", 7, 80);
+			g.drawString("FPS:       " + Game.FPS, 7, 100);
 			
 		}
 	}

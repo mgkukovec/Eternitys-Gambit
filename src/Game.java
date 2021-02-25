@@ -6,10 +6,12 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 
 public class Game extends Canvas implements Runnable {
-
-	private static final long serialVersionUID = -1442798787354930462L;
-
 	public static final int WIDTH = 640, HEIGHT = WIDTH / 16 * 9;
+	public static int FPS;
+	public static int TPS = 30;
+	public static int FPSmax = 60;
+	
+	private static final long serialVersionUID = -1442798787354930462L;
 	private Thread thread;
 	private boolean running = false;
 	private Handler handler;
@@ -53,18 +55,21 @@ public class Game extends Canvas implements Runnable {
 
 	// Game loop
 	public void run() {
-		this.requestFocus();
-		long timeLast = System.nanoTime();
-		int ticksPerSecond = 30;
-		double nsPerTick = 1000000000.0 / ticksPerSecond;
+		FPS = 0;
+		
+		long nsCycleStart;
+		long nsPrevCycleStart = System.nanoTime();
+		double nsPerTick = 1000000000.0 / TPS;
 		double delta = 0; // units "tick"
 		long timer = System.currentTimeMillis();
-		int frames = 0;
+		int runningFPS = 0;
+		
+		this.requestFocus();
 
 		while (running) {
-			long timeNow = System.nanoTime();
-			delta += (timeNow - timeLast) / nsPerTick; // One tick has passed
-			timeLast = timeNow;
+			nsCycleStart = System.nanoTime();
+			delta += (nsCycleStart - nsPrevCycleStart) / nsPerTick; // One tick has passed
+			nsPrevCycleStart = nsCycleStart;
 			while (delta >= 1) {
 				tick();
 				delta--;
@@ -72,17 +77,25 @@ public class Game extends Canvas implements Runnable {
 			if (running) {
 				render();
 			}
-			frames++;
+			runningFPS++;
 
-			// Prints FPS once per second
-			// if statement checks if current time is 1 sec larger than timer
-			// if yes, update timer to 1 sec later
-			// frames is displayed and reset once per second, so displays FPS
+			// Updates FPS once per second
 			if (System.currentTimeMillis() - timer > 1000) {
 				timer += 1000;
-				System.out.println("FPS: " + frames);
-				frames = 0;
+				FPS = runningFPS;
+				runningFPS = 0;
 			}
+			
+			// FPS cap
+			// Waits (usually) 1/60 of a second - time it took to tick and render
+			try {
+				Thread.sleep((1000 / FPSmax) - ((System.nanoTime() - nsCycleStart) / 1000000));
+			} catch (InterruptedException e) {
+				System.out.println("Thread was interrupted during sleep.");
+			} catch (IllegalArgumentException e) {
+				System.out.println("FPS dropped below max.");
+			}
+			
 		}
 		stop();
 	}
