@@ -3,7 +3,21 @@ import java.awt.Point;
 
 public class CollisionDetection {
 
+	// Rewrite for generic rectangles?
+	// Better if we return a boolean and just update the object within this method?
+	// Double check this doesnt mess up falling when Player calls all those extra things
 	public static Rectangle resolveSpriteObjectCollision(Sprite s, Object o) {
+		
+		// Create a rectangle surrounding previous position and new position
+		// If this rectangle doesn't collide, no possible collision
+		Rectangle combined = new Rectangle(Math.min(s.x, s.prevX),	// Farthest left x value
+										   Math.min(s.y, s.prevY),	// Farthest top y value
+										   Math.max(Math.abs(s.x - s.prevX + s.width), Math.abs(s.x + s.width - s.prevX)),
+										   Math.max(Math.abs(s.y - s.prevY + s.height), Math.abs(s.y + s.height - s.prevY)));
+		
+		if(combined.intersects(o.getBoundingBox()) == false) {
+			return s.getBoundingBox();
+		}
 
 		Point sCenter = new Point(s.x + (s.width / 2), s.y + (s.height / 2));
 		Point sCenterPrev = new Point(s.prevX + s.width / 2, s.prevY + s.height / 2);
@@ -22,6 +36,7 @@ public class CollisionDetection {
 		double NEARty = (dirY == 0) ? Integer.MAX_VALUE * Math.signum(r.y - sCenterPrev.y) : (r.y - sCenterPrev.y) / dirY;
 		double FARty = (dirY == 0) ? Integer.MAX_VALUE * Math.signum(r.y + r.height - sCenterPrev.y) : (r.y + r.height - sCenterPrev.y) / dirY;
 
+		// TODO: make this work without a temp variable
 		// Sort near and far t values
 		if (NEARtx > FARtx) {
 			double temp = NEARtx;

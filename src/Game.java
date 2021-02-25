@@ -23,7 +23,7 @@ public class Game extends Canvas implements Runnable {
 		camera = new Camera(0, 0);
 		
 		this.addKeyListener(new KeyInput());
-		new Window(WIDTH, HEIGHT, "GAME TITLE", this);
+		new Window(WIDTH, HEIGHT, "Miss Adventure", this);
 		
 		BufferedImageLoader imageLoader = new BufferedImageLoader();
 		spriteSheet = imageLoader.loadImage("/spriteSheet.png");
@@ -120,7 +120,9 @@ public class Game extends Canvas implements Runnable {
 		
 		g2d.translate(-camera.getX(), -camera.getY());
 		
-		hud.render(g);
+		if(handler.loadedSprites.isEmpty() == false) {
+			hud.render(g, handler.loadedSprites.get(0));
+		}
 		
 		g.dispose();
 		bs.show();

@@ -19,6 +19,7 @@ public class Handler {
 	}
 
 	// Render every Entity and Object to the screen
+	// Player is the first Sprite rendered
 	public void render(Graphics g) {
 		for (Object tempObject : loadedObjects) {
 			tempObject.render(g);
@@ -29,7 +30,7 @@ public class Handler {
 	}
 
 	public void addSprite(Sprite sprite) {
-		if (sprite instanceof Player) {
+		if (sprite.id == SpriteID.Player) {
 			this.loadedSprites.addFirst(sprite);
 		} else {
 			this.loadedSprites.add(sprite);

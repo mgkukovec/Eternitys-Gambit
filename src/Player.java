@@ -14,6 +14,7 @@ public class Player extends Sprite {
 		
 		SpriteSheet spriteSheet = new SpriteSheet(ss);
 		spriteModel = spriteSheet.grabImage(1, 1, 60, 90, 60, 90);
+		health = 100;
 	}
 
 	// Not every Sprite will have the same collision
@@ -25,7 +26,7 @@ public class Player extends Sprite {
 				if (getBoundingBox().intersects(tempSprite.getBoundingBox())) {
 					// Collision with enemy, replace 5 with enemyCollisionDamage
 					// Also need a timer so you aren't constantly taking collision damage
-					PlayerHUD.playerHealth -= 5;
+					health -= 5;
 					return true;
 				}
 			}
@@ -67,10 +68,15 @@ public class Player extends Sprite {
 		
 		xVelocity = 0;
 
-		if (KeyInput.isPressed(KeyEvent.VK_A))
+		// Movement
+		if (KeyInput.isPressed(KeyEvent.VK_A)) {
 			xVelocity += -9;
-		if (KeyInput.isPressed(KeyEvent.VK_D))
+			facingRight = false;
+		}
+		if (KeyInput.isPressed(KeyEvent.VK_D)) {
 			xVelocity += 9;
+			facingRight = true;
+		}
 		if (KeyInput.isPressed(KeyEvent.VK_W))
 			yVelocity += -9;
 		if (KeyInput.isPressed(KeyEvent.VK_S))
@@ -79,6 +85,12 @@ public class Player extends Sprite {
 			yVelocity = -30;
 			falling = true;
 		}
+		
+		// Debug
+		if (KeyInput.isPressed(KeyEvent.VK_F3) && PlayerHUD.debugToggle == false) {
+			PlayerHUD.debugMode = !PlayerHUD.debugMode;
+		}
+		PlayerHUD.debugToggle = KeyInput.isPressed(KeyEvent.VK_F3);
 		
 		if(falling) {
 			yVelocity += gravity;
@@ -107,6 +119,10 @@ public class Player extends Sprite {
 	public void render(Graphics g) {
 		g.setColor(Color.blue);
 		g.fillRect(x, y, width, height);
-		g.drawImage(spriteModel, x, y, null);
+		
+		if(facingRight)
+			g.drawImage(spriteModel, x, y, width, height, null);
+		else
+			g.drawImage(spriteModel, x + width, y, -width, height, null);
 	}
 }

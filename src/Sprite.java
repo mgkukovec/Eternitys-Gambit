@@ -6,12 +6,14 @@ public abstract class Sprite {
 
 	protected int gravity = 3;
 	protected boolean falling;
+	protected boolean facingRight;
 	// Coordinates, origin at top left	
 	protected int x, y;
 	protected int prevX, prevY;
 	protected int xVelocity, yVelocity;
 	protected int xAccel, yAccel;
 	protected int width, height;
+	protected int health;
 	protected SpriteID id;
 	protected BufferedImage spriteModel;
 	
@@ -22,6 +24,7 @@ public abstract class Sprite {
 		this.height = height;
 		this.id = id;
 		falling = true;
+		facingRight = true;
 	}
 	
 	public abstract void tick();

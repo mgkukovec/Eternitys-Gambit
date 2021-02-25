@@ -10,6 +10,7 @@ public class Camera {
 	
 	public void tick(Sprite player) {
 		x = -player.getX() + Game.WIDTH / 2 - (player.width / 2);
+		y = -player.getY() + Game.HEIGHT / 2 - (player.width / 2);
 	}
 
 	public int getX() {
