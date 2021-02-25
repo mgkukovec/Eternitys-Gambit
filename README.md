@@ -11,8 +11,6 @@ Correct order of multiple collisions
 
 Camera movement
 
-Toggleable debug screen
-
 Intelligent basic enemy
 
 Action cycles for sprites
@@ -20,3 +18,5 @@ Action cycles for sprites
 Angular Collision
 
 Different hitbox for collision and damage
+
+Change falling conditions so that standing makes falling = false
