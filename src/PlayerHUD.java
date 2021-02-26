@@ -23,8 +23,8 @@ public class PlayerHUD {
 			g.drawString("Health: " + player.health, 7, 40);
 			g.drawString("Falling: " + player.falling, 7, 60);
 			g.drawString("Velocity: (" + player.xVelocity + ", " + player.yVelocity + ")", 7, 80);
-			g.drawString("FPS: " + Game.FPS, 7, 100);
-			g.drawString("TPS: " + Game.TPS, 7, 120);
+			g.drawString("FPS: " + Game.FPS + "/" + Game.FPSmax, 7, 100);
+			g.drawString("TPS: " + Game.TPS + "/" + Game.TPSmax, 7, 120);
 			g.drawString("Collision: " + player.inCollision, 7, 140);
 			g.drawString("Standing on: " + player.standingOn, 7, 160);
 			

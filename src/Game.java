@@ -6,10 +6,12 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 
 public class Game extends Canvas implements Runnable {
-	public static final int WIDTH = 640, HEIGHT = WIDTH / 16 * 9;
+	public static final int WIDTH = 1080, HEIGHT = WIDTH * 9 / 16;
 	public static int FPS = 0;
-	public static int TPS = 30;
+	public static int TPS = 0;
+	public static int TPSmax = 30;
 	public static int FPSmax = 60;
+	public static int currentTick = 0;
 	
 	private static final long serialVersionUID = -1442798787354930462L;
 	private Thread thread;
@@ -33,9 +35,13 @@ public class Game extends Canvas implements Runnable {
 		// This might belong in it's own class
 		// Does each room need it's own class?
 		handler.addSprite(new Player(150, 100, 60, 90, SpriteID.Player, handler, spriteSheet));
-		handler.addObject(new BasicPlatform(150, 300, 300, 1, ObjectID.BasicPlatform, handler));
+		handler.addObject(new BasicPlatform(150, 300, 300, 2, ObjectID.BasicPlatform, handler));
 		handler.addObject(new BasicPlatform(350, 150, 50, 40, ObjectID.BasicPlatform, handler));
 		handler.addObject(new BasicPlatform(150, 220, 50, 10, ObjectID.BasicPlatform, handler));
+		handler.addObject(new BasicPlatform(50, 500, 500, 30, ObjectID.BasicPlatform, handler));
+		handler.addObject(new BasicPlatform(800, 300, 200, 30, ObjectID.BasicPlatform, handler));
+		handler.addObject(new BasicPlatform(600, 550, 400, 10, ObjectID.BasicPlatform, handler));
+		handler.addObject(new BasicPlatform(600, 400, 20, 300, ObjectID.BasicPlatform, handler));
 	}
 
 	public synchronized void start() {
@@ -55,16 +61,15 @@ public class Game extends Canvas implements Runnable {
 
 	// Game loop
 	public void run() {
-		FPS = 0;
+		this.requestFocus();
 		
+		FPS = 0;
 		long nsCycleStart;
 		long nsPrevCycleStart = System.nanoTime();
-		double nsPerTick = 1000000000.0 / TPS;
+		double nsPerTick = 1000000000.0 / TPSmax;
 		double delta = 0; // units "tick"
 		long timer = System.currentTimeMillis();
 		int runningFPS = 0;
-		
-		this.requestFocus();
 
 		while (running) {
 			nsCycleStart = System.nanoTime();
@@ -72,6 +77,7 @@ public class Game extends Canvas implements Runnable {
 			nsPrevCycleStart = nsCycleStart;
 			while (delta >= 1) {
 				tick();
+				currentTick++;
 				delta--;
 			}
 			if (running) {
@@ -79,23 +85,23 @@ public class Game extends Canvas implements Runnable {
 			}
 			runningFPS++;
 
-			// Updates FPS once per second
+			// Updates FPS and TPS once per second
 			if (System.currentTimeMillis() - timer > 1000) {
 				timer += 1000;
 				FPS = runningFPS;
+				TPS = currentTick;
 				runningFPS = 0;
+				currentTick = 0;
 			}
 			
-			// FPS cap
-			// Waits (usually) 1/60 of a second - time it took to tick and render
+			// FPS cap, for 60 FPS sleeps (1/60 of a second - time it took to tick and render)
 			try {
 				Thread.sleep((1000 / FPSmax) - ((System.nanoTime() - nsCycleStart) / 1000000));
 			} catch (InterruptedException e) {
-				System.out.println("Thread was interrupted during sleep.");
+				System.out.println("Thread was interrupted.");
 			} catch (IllegalArgumentException e) {
 				System.out.println("FPS dropped below max.");
 			}
-			
 		}
 		stop();
 	}
@@ -142,18 +148,9 @@ public class Game extends Canvas implements Runnable {
 	}
 	
 	public static int clamp(int value, int min, int max) {
-		//return Math.max(min, (Math.min(max, value)));
-		if(value < min) {
-			return min;
-		}
-		if (value > max) {
-			return max;
-		}
-		return value;
+		return Math.max(min, (Math.min(max, value)));
 	}
 	
-	
-
 	public static void main(String[] args) {
 		new Game();
 	}

@@ -5,6 +5,8 @@ import java.awt.image.BufferedImage;
 public abstract class Sprite {
 
 	protected int gravity = 3;
+	protected int speed = 12;
+	protected boolean jumpAvailable;
 	protected boolean inCollision = false;
 	protected ObjectID standingOn;
 	protected boolean falling;
@@ -28,6 +30,7 @@ public abstract class Sprite {
 		falling = true;
 		facingRight = true;
 		standingOn = null;
+		jumpAvailable = true;
 	}
 	
 	public abstract void tick();

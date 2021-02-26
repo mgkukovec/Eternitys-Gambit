@@ -7,6 +7,10 @@ import java.awt.image.BufferedImage;
 public class Player extends Sprite {
 
 	Handler handler;
+	long msTimeOfLastJump;
+	long msTimeLastOnPlatform;
+	int msJumpBuffer = 50;	// Able to "queue" a jump before touching the ground within N milliseconds
+	int msCoyoteTime = 150;	// Able to jump while falling if touching platform at most N milliseconds prior
 
 	public Player(int x, int y, int width, int height, SpriteID id, Handler handler, BufferedImage ss) {
 		super(x, y, width, height, id);
@@ -15,6 +19,8 @@ public class Player extends Sprite {
 		SpriteSheet spriteSheet = new SpriteSheet(ss);
 		spriteModel = spriteSheet.grabImage(1, 1, 60, 90, 60, 90);
 		health = 100;
+		msTimeOfLastJump = 0;
+		msTimeLastOnPlatform = 0;
 	}
 
 	// Not every Sprite will have the same collision
@@ -62,6 +68,7 @@ public class Player extends Sprite {
 				if(this.y + this.height == o.y && !((this.x < o.x && this.x + this.width < o.x) || (this.x > o.x + o.width && this.x + this.width > o.x + o.width))) {
 					collision = true;
 					falling = false;
+					this.jumpAvailable = true;
 					this.standingOn = o.id;
 				}
 		}
@@ -77,16 +84,28 @@ public class Player extends Sprite {
 
 		// Movement
 		if (KeyInput.isPressed(KeyEvent.VK_A)) {
-			xVelocity += -9;
+			xVelocity += -speed;
 			facingRight = false;
 		}
 		if (KeyInput.isPressed(KeyEvent.VK_D)) {
-			xVelocity += 9;
+			xVelocity += speed;
 			facingRight = true;
 		}
-		if (KeyInput.isPressed(KeyEvent.VK_SPACE) && falling == false) {
-			yVelocity = -30;
+		if (KeyInput.isPressed(KeyEvent.VK_SPACE)) {
+			//yVelocity = -30;
+			msTimeOfLastJump = System.currentTimeMillis();
+		}
+		
+		// Check JumpBuffer and CoyoteTime
+		if (msCoyoteTime <= 0 && falling == false) {
+			yVelocity = -40;
 			falling = true;
+			jumpAvailable = false;
+		}
+		else if (jumpAvailable && msTimeOfLastJump >= System.currentTimeMillis() - msJumpBuffer && System.currentTimeMillis() < msTimeLastOnPlatform + msCoyoteTime) {
+			yVelocity = -40;
+			falling = true;
+			jumpAvailable = false;
 		}
 		
 		// Debug
@@ -101,13 +120,16 @@ public class Player extends Sprite {
 			yVelocity = 0;
 		}
 		
-		yVelocity = Game.clamp(yVelocity, -30, 30);
+		yVelocity = Game.clamp(yVelocity, -40, 40);
 		
 		x += xVelocity; // Replace using acceleration for running
 		y += yVelocity; // Replace with gravity equation for jumping
 		
 		inCollision = collisionWithObjects();
 		
+		if(falling == false) {
+			msTimeLastOnPlatform = System.currentTimeMillis();
+		}
 		
 	}
 

@@ -2,7 +2,7 @@ import java.awt.Rectangle;
 import java.awt.Point;
 
 public class CollisionDetection {
-
+	
 	// Rewrite for generic rectangles?
 	// Better if we return a boolean and just update the object within this method?
 	// Double check this doesnt mess up falling when Player calls all those extra things
@@ -12,8 +12,8 @@ public class CollisionDetection {
 		// If this rectangle doesn't collide, no possible collision
 		Rectangle combined = new Rectangle(Math.min(s.x, s.prevX),	// Farthest left x value
 										   Math.min(s.y, s.prevY),	// Farthest top y value
-										   Math.max(Math.abs(s.x - s.prevX + s.width), Math.abs(s.x + s.width - s.prevX)),
-										   Math.max(Math.abs(s.y - s.prevY + s.height), Math.abs(s.y + s.height - s.prevY)));
+										   Math.max(s.x, s.prevX) + s.width - Math.min(s.x, s.prevX),	// Combined width
+										   Math.max(s.y, s.prevY) + s.height - Math.min(s.y, s.prevY)); // Combined height
 		
 		if(combined.intersects(o.getBoundingBox()) == false) {
 			return s.getBoundingBox();

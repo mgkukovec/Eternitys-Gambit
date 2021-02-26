@@ -9,8 +9,8 @@ public class BasicPlatform extends Object {
 		this.width = width;
 		this.height = height;
 		this.id = id;
-		Vx = 0;
-		Vy = 0;
+		//Vx = 0;
+		//Vy = 0;
 	}
 
 	public void tick() {
