@@ -14,3 +14,6 @@ Action cycles for sprites
 Angular Collision
 
 Different hitbox for collision and damage
+
+Fix repeated jumping on walls bug
+Jump test being performed while inside walls before collision is resolved?
