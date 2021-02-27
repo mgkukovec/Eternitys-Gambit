@@ -17,3 +17,5 @@ Different hitbox for collision and damage
 
 Fix repeated jumping on walls bug
 Jump test being performed while inside walls before collision is resolved?
+
+Enemies need to have a separate bounding box in front of them (direction facing), jump when it intersects an object
