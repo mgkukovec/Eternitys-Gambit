@@ -11,21 +11,19 @@ public class Camera {
 	
 	public void tick(Sprite player) {
 		
-		int endLocationX = -player.getX() + Game.WIDTH / 2 - (player.width / 2) + ((player.facingRight) ? -facingBias : facingBias);
-		int endLocationY = -player.getY() + Game.HEIGHT / 2;
+		int endLocationX = -player.getxPrev() + Game.WIDTH / 2 - (player.width / 2) + ((player.facingRight) ? -facingBias : facingBias);
+		int endLocationY = -player.getyPrev() + Game.HEIGHT / 2;
 		
 		if (x == endLocationX && y == endLocationY) {
 			return;
 		}
 		
-		x += (double) Math.signum(endLocationX - x) * Math.abs(endLocationX - x) / (8); // Higher constant = slower camera adjustment
+		// High constant = slow camera adjustment
+		x += Math.ceil(Math.signum(endLocationX - x) * Math.abs(endLocationX - x) / (8)); // Left and Right
+		y += Math.ceil(Math.signum(endLocationY - y) * Math.abs(endLocationY - y) / ((endLocationY > y) ? 12 : 2)); // Jumping, Falling
 		
-		if (endLocationY > y) {
-			y += (double) Math.signum(endLocationY - y) * Math.abs(endLocationY - y) / (6);
-		} else {
-			y += (double) Math.signum(endLocationY - y) * Math.abs(endLocationY - y) / (2); // When falling, adjust camera faster
-		}
-		
+		// Lowest object at y=500
+		y = Game.clamp(y, Game.HEIGHT - (500 + 200), 100000); // 500 is the floor
 	}
 
 	public int getX() {

@@ -9,11 +9,13 @@ public class Game extends Canvas implements Runnable {
 	public static int WIDTH = 1280;
 	public static int HEIGHT = WIDTH * 9 / 16;
 	public static int TPSmax = 30;
-	public static int FPSmax = 60;
+	public static int FPSmax = 30;
 	
 	public static int FPS = 0;
 	public static int TPS = 0;
 	public static int currentTick = 0;
+	
+	public static final int gravity = 3;
 	
 	private static final long serialVersionUID = -1442798787354930462L;
 	private Thread thread;
@@ -36,15 +38,14 @@ public class Game extends Canvas implements Runnable {
 		playerSS = imageLoader.loadImage("/spriteSheet.png");
 		platformSS = imageLoader.loadImage("/Rocks.png");
 		
-		// This might belong in it's own class
-		// Does each room need it's own class?
 		handler.addSprite(new Player(150, 100, 60, 90, SpriteID.Player, handler, playerSS));
-		handler.addObject(new BasicPlatform(50, 500, 480, 270, ObjectID.BasicPlatform, handler, platformSS));
-		handler.addObject(new BasicPlatform(50 + 480, 500, 480, 270, ObjectID.BasicPlatform, handler, platformSS));
-		handler.addObject(new BasicPlatform(50 + (480 * 2), 500, 480, 270, ObjectID.BasicPlatform, handler, platformSS));
-		handler.addObject(new TestPlatform(50 + 480, 230, 480, 30, ObjectID.BasicPlatform, handler));
-		handler.addObject(new TestPlatform(1300, 0, 20, 500, ObjectID.BasicPlatform, handler));
-		
+		handler.addSprite(new Slime(600, 100, 60, 90, SpriteID.Slime, handler, playerSS));
+		handler.addObject(new BasicPlatform(50, 500, 480, 270, ObjectID.BasicPlatform, platformSS));
+		handler.addObject(new BasicPlatform(50 + 480, 500, 480, 270, ObjectID.BasicPlatform, platformSS));
+		handler.addObject(new BasicPlatform(50 + (480 * 2), 500, 480, 270, ObjectID.BasicPlatform, platformSS));
+		handler.addObject(new TestPlatform(50 + 480, 230, 480, 30, ObjectID.BasicPlatform));
+		handler.addObject(new TestPlatform(1300, 0, 20, 500, ObjectID.BasicPlatform));
+		handler.addObject(new TestPlatform(1100, 0, 300, 30, ObjectID.BasicPlatform));
 	}
 
 	public synchronized void start() {
@@ -73,6 +74,7 @@ public class Game extends Canvas implements Runnable {
 		double delta = 0; // units "tick"
 		long timer = System.currentTimeMillis();
 		int runningFPS = 0;
+		int runningTPS = 0;
 
 		while (running) {
 			nsCycleStart = System.nanoTime();
@@ -81,6 +83,7 @@ public class Game extends Canvas implements Runnable {
 			while (delta >= 1) {
 				tick();
 				currentTick++;
+				runningTPS++;
 				delta--;
 			}
 			if (running) {
@@ -92,15 +95,15 @@ public class Game extends Canvas implements Runnable {
 			if (System.currentTimeMillis() - timer > 1000) {
 				timer += 1000;
 				FPS = runningFPS;
-				TPS = currentTick;
+				TPS = runningTPS;
 				runningFPS = 0;
-				currentTick = 0;
+				runningTPS = 0;
 			}
 			
 			WIDTH = window.getWindowWidth();
 			HEIGHT = window.getWindowHeight();
 			
-			// FPS cap, for 60 FPS sleeps (1/60 of a second - time it took to tick and render)
+			// FPS cap
 			try {
 				Thread.sleep((1000 / FPSmax) - ((System.nanoTime() - nsCycleStart) / 1000000));
 			} catch (InterruptedException e) {
@@ -116,13 +119,9 @@ public class Game extends Canvas implements Runnable {
 		handler.tick();
 		hud.tick();
 		
-		// Player should be the first object in this list
-		for(int i = 0; i < handler.loadedSprites.size(); i++) {
-			if(handler.loadedSprites.get(i).getId() == SpriteID.Player) {
-				camera.tick(handler.loadedSprites.get(i));
-				break;
-			}
-		}
+		// Player is last in list
+		if(handler.playerLoaded())
+			camera.tick(handler.getPlayer());
 	}
 
 	private void render() {
@@ -138,25 +137,33 @@ public class Game extends Canvas implements Runnable {
 		g.setColor(Color.BLUE);
 		g.fillRect(0, 0, WIDTH, HEIGHT);
 		
-		// Anything between these two statements will be affected by the camera
+		// Affected by camera
 		g2d.translate(camera.getX(), camera.getY());
 
 		// Render all Sprites and Objects
 		handler.render(g);
 		
 		g2d.translate(-camera.getX(), -camera.getY());
+		// End affected by camera
 		
-		if(handler.loadedSprites.isEmpty() == false) {
-			hud.render(g, handler.loadedSprites.get(0));
-		}
-		
+		// Player is last in list
+		if(handler.playerLoaded())
+			hud.render(g, handler.getPlayer());
 		
 		g.dispose();
 		bs.show();
 	}
 	
-	public static int clamp(int value, int min, int max) {
-		return Math.max(min, (Math.min(max, value)));
+	/**
+	 * Bounds a value between an Integer range.
+	 * 
+	 * @param n		the value to check
+	 * @param min	the minimum n can be
+	 * @param max	the maximum n can be
+	 * @return		the bounded value of n
+	 */
+	public static int clamp(int n, int min, int max) {
+		return Math.max(min, (Math.min(max, n)));
 	}
 	
 	public static void main(String[] args) {

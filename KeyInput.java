@@ -9,6 +9,12 @@ public class KeyInput extends KeyAdapter {
 		pressed = new boolean[256];
 	}
 	
+	/**
+	 * Checks if a key is currently pressed.
+	 * 
+	 * @param keyCode	the ASCII value of a key, use KeyEvent.VK_<key>
+	 * @return			if the key is pressed
+	 */
 	public static boolean isPressed(int keyCode) {
 		return (keyCode < 256) ? pressed[keyCode] : false;
 	}

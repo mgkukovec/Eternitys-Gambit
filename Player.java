@@ -6,19 +6,22 @@ import java.awt.image.BufferedImage;
 
 public class Player extends Sprite {
 
-	Handler handler;
-	long msTimeOfLastSpacePress = 0;
+	long msTimeJumpQueued = 0;
 	long msTimeLastOnPlatform = 0;
-	int msJumpBuffer = 50;	// Able to "queue" a jump before touching the ground within N milliseconds
-	int msCoyoteTime = 150;	// Able to jump while falling if touching platform at most N milliseconds prior
+	boolean previouslyPressingJump = false;
+	boolean jumpedSinceOnPlatform = false;
+	int msBufferTime = 150; // Able to "queue" a jump N milliseconds before touching ground
+	int msCoyoteTime = 150; // Able to jump N milliseconds after leaving the ground
 
 	public Player(int x, int y, int width, int height, SpriteID id, Handler handler, BufferedImage ss) {
 		super(x, y, width, height, id);
 		this.handler = handler;
-		
+
 		SpriteSheet spriteSheet = new SpriteSheet(ss);
 		spriteModel = spriteSheet.grabImage(1, 1, 60, 90, 60, 90);
 		health = 100;
+		speed = 14;
+		bodyDamage = 0;
 	}
 
 	// Not every Sprite will have the same collision
@@ -26,105 +29,82 @@ public class Player extends Sprite {
 	// Some enemies can ignore platforms
 	private boolean collisionWithSprites() {
 		for (Sprite tempSprite : handler.loadedSprites) {
-			if (tempSprite.getId() == SpriteID.Enemy) {
-				if (getBoundingBox().intersects(tempSprite.getBoundingBox())) {
-					// Collision with enemy, replace 5 with enemyCollisionDamage
-					// Also need a timer so you aren't constantly taking collision damage
-					health -= 5;
-					return true;
-				}
+			if (getBoundingBox().intersects(tempSprite.getBoundingBox())) {
+				// Collision with enemy, replace 5 with enemyCollisionDamage
+				// Also need a timer so you aren't constantly taking collision damage
+				health -= 5;
+				return true;
 			}
 		}
 		return false;
 	}
-	
-	
-	private boolean collisionWithObjects() {
-		// create a list of some kind to hold all the objects that MIGHT cause collision
-		boolean collision = false;
-		falling = true;
-		this.standingOn = null;
-		
-		for (Object o : handler.loadedObjects) {
-				Rectangle resolvedPos = CollisionDetection.resolveAABBCollision(this, o);
-				if (this.x != resolvedPos.x || this.y != resolvedPos.y) {
-					collision = true;
-					
-					if (this.y < resolvedPos.y) {
-						// Collision with ceiling
-						yVelocity = 0;
-					}
-				}
-				
-				this.x = resolvedPos.x;
-				this.y = resolvedPos.y;
-				
-				// On top of tempObject
-				if(this.y + this.height == o.y && !((this.x < o.x && this.x + this.width < o.x) || (this.x > o.x + o.width && this.x + this.width > o.x + o.width))) {
-					collision = true;
-					falling = false;
-					this.jumpAvailable = true;
-					this.standingOn = o.id;
-				}
-		}
-		return collision;
-	}
 
 	public void tick() {
-		
-		this.setPrevX(x);
-		this.setPrevY(y);
-		
-		xVelocity = 0;
+
+		this.setxPrev(x);
+		this.setyPrev(y);
+
+		xVel = 0;
 
 		// Movement
 		if (KeyInput.isPressed(KeyEvent.VK_A)) {
-			xVelocity += -speed;
+			xVel += -speed;
 			facingRight = false;
 		}
 		if (KeyInput.isPressed(KeyEvent.VK_D)) {
-			xVelocity += speed;
+			xVel += speed;
 			facingRight = true;
 		}
-		if (KeyInput.isPressed(KeyEvent.VK_SPACE)) {
-			//yVelocity = -30;
-			msTimeOfLastSpacePress = System.currentTimeMillis();
+		
+		// Queues a jump if jump key is pressed, does not count holding jump key
+		if (KeyInput.isPressed(KeyEvent.VK_SPACE) && !previouslyPressingJump) {
+			msTimeJumpQueued = System.currentTimeMillis();
+		}
+
+		// Determine if able to jump
+		boolean inCoyoteTime = System.currentTimeMillis() < msTimeLastOnPlatform + msCoyoteTime;
+		boolean inBufferTime = System.currentTimeMillis() < msTimeJumpQueued + msBufferTime;
+		if(standingOn != null) {
+			jumpedSinceOnPlatform = false;
 		}
 		
-		if ((msCoyoteTime <= 0 && falling == false) || (jumpAvailable && msTimeOfLastSpacePress >= System.currentTimeMillis() - msJumpBuffer && System.currentTimeMillis() < msTimeLastOnPlatform + msCoyoteTime)) {
-			yVelocity = -45;
+		// Jump
+		if (!jumpedSinceOnPlatform && inBufferTime && inCoyoteTime) {
+			yVel = -45;
 			falling = true;
-			jumpAvailable = false;
+			jumpedSinceOnPlatform = true;
 		}
-		
+
 		// Debug
-		if (KeyInput.isPressed(KeyEvent.VK_F3) && PlayerHUD.pressingDebugKeyOnLastCheck == false) {
-			PlayerHUD.debugMode = !PlayerHUD.debugMode;
+		if (KeyInput.isPressed(KeyEvent.VK_F3)) {
+			PlayerHUD.toggleDebug();
 		}
-		PlayerHUD.pressingDebugKeyOnLastCheck = KeyInput.isPressed(KeyEvent.VK_F3);
-		
-		yVelocity = Game.clamp(yVelocity, -45, 40);
-		
-		x += xVelocity; // Replace using acceleration for running
-		y += yVelocity; // Replace with gravity equation for jumping
-		
-		inCollision = collisionWithObjects();
-		
-		if(falling) {
-			yVelocity += gravity;
+
+		yVel = Game.clamp(yVel, -yVelMax, yVelMax);
+
+		x += xVel;
+		y += yVel;
+
+		if (x != xPrev || y != yPrev)
+			CollisionDetection.collisionWithObjects(this, handler);
+
+		if (falling) {
+			yVel += Game.gravity;
 		} else {
-			yVelocity = 0;
+			yVel = 0;
 			msTimeLastOnPlatform = System.currentTimeMillis();
 		}
+		
+		previouslyPressingJump = KeyInput.isPressed(KeyEvent.VK_SPACE);
 	}
 
 	public void render(Graphics g) {
-		if(facingRight)
+		if (facingRight)
 			g.drawImage(spriteModel, x, y, width, height, null);
 		else
 			g.drawImage(spriteModel, x + width, y, -width, height, null);
-		
-		if(PlayerHUD.debugMode) {
+
+		if (PlayerHUD.debugMode) {
 			g.setColor(Color.white);
 			g.drawRect(x, y, width, height);
 		}
