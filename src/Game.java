@@ -6,20 +6,26 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 
 public class Game extends Canvas implements Runnable {
-	public static final int WIDTH = 1080, HEIGHT = WIDTH * 9 / 16;
+	public static int WIDTH = 1280;
+	public static int HEIGHT = WIDTH * 9 / 16;
+	public static int TPSmax = 30;
+	public static int FPSmax = 30;
+	
 	public static int FPS = 0;
 	public static int TPS = 0;
-	public static int TPSmax = 30;
-	public static int FPSmax = 60;
 	public static int currentTick = 0;
+	
+	public static final int gravity = 3;
 	
 	private static final long serialVersionUID = -1442798787354930462L;
 	private Thread thread;
 	private boolean running = false;
 	private Handler handler;
 	private PlayerHUD hud;
-	public BufferedImage spriteSheet;
+	public BufferedImage playerSS, platformSS;
+	public BufferedImage slimeSS, coinSS;
 	private Camera camera;
+	private Window window;
 
 	public Game() {
 		handler = new Handler();
@@ -27,21 +33,24 @@ public class Game extends Canvas implements Runnable {
 		camera = new Camera(0, 0);
 		
 		this.addKeyListener(new KeyInput());
-		new Window(WIDTH, HEIGHT, "Miss Adventure", this);
+		window = new Window(WIDTH, HEIGHT, "Miss Adventure", this);
 		
 		BufferedImageLoader imageLoader = new BufferedImageLoader();
-		spriteSheet = imageLoader.loadImage("/spriteSheet.png");
+		playerSS = imageLoader.loadImage("/spriteSheet.png");
+		platformSS = imageLoader.loadImage("/Rocks.png");
+		slimeSS = imageLoader.loadImage("/SlimeSheet.png");
+		coinSS = imageLoader.loadImage("/coins.png");
 		
-		// This might belong in it's own class
-		// Does each room need it's own class?
-		handler.addSprite(new Player(150, 100, 60, 90, SpriteID.Player, handler, spriteSheet));
-		handler.addObject(new BasicPlatform(150, 300, 300, 2, ObjectID.BasicPlatform, handler));
-		handler.addObject(new BasicPlatform(350, 150, 50, 40, ObjectID.BasicPlatform, handler));
-		handler.addObject(new BasicPlatform(150, 220, 50, 10, ObjectID.BasicPlatform, handler));
-		handler.addObject(new BasicPlatform(50, 500, 500, 30, ObjectID.BasicPlatform, handler));
-		handler.addObject(new BasicPlatform(800, 300, 200, 30, ObjectID.BasicPlatform, handler));
-		handler.addObject(new BasicPlatform(600, 550, 400, 10, ObjectID.BasicPlatform, handler));
-		handler.addObject(new BasicPlatform(600, 400, 20, 300, ObjectID.BasicPlatform, handler));
+		handler.addSprite(new Player(200, 100, SpriteID.Player, handler, playerSS));
+		handler.addSprite(new Slime(600, 100, SpriteID.Slime, handler, slimeSS));
+		handler.addSprite(new Coin(100, 100, SpriteID.Coin, handler, coinSS, 50));
+		handler.addSprite(new Coin(110, 100, SpriteID.Coin, handler, coinSS, 50));
+		handler.addSprite(new Coin(133, 100, SpriteID.Coin, handler, coinSS, 50));
+		handler.addObject(new BasicPlatform(50, 500, 480, 270, ObjectID.BasicPlatform, platformSS));
+		handler.addObject(new BasicPlatform(50 + 480, 500, 480, 270, ObjectID.BasicPlatform, platformSS));
+		handler.addObject(new BasicPlatform(50 + (480 * 2), 500, 480, 270, ObjectID.BasicPlatform, platformSS));
+		handler.addObject(new TestPlatform(50 + 480, 145, 480, 30, ObjectID.BasicPlatform));
+		handler.addObject(new TestPlatform(1100, 200, 20, 300, ObjectID.BasicPlatform));
 	}
 
 	public synchronized void start() {
@@ -70,6 +79,7 @@ public class Game extends Canvas implements Runnable {
 		double delta = 0; // units "tick"
 		long timer = System.currentTimeMillis();
 		int runningFPS = 0;
+		int runningTPS = 0;
 
 		while (running) {
 			nsCycleStart = System.nanoTime();
@@ -78,6 +88,7 @@ public class Game extends Canvas implements Runnable {
 			while (delta >= 1) {
 				tick();
 				currentTick++;
+				runningTPS++;
 				delta--;
 			}
 			if (running) {
@@ -89,12 +100,15 @@ public class Game extends Canvas implements Runnable {
 			if (System.currentTimeMillis() - timer > 1000) {
 				timer += 1000;
 				FPS = runningFPS;
-				TPS = currentTick;
+				TPS = runningTPS;
 				runningFPS = 0;
-				currentTick = 0;
+				runningTPS = 0;
 			}
 			
-			// FPS cap, for 60 FPS sleeps (1/60 of a second - time it took to tick and render)
+			WIDTH = window.getWindowWidth();
+			HEIGHT = window.getWindowHeight();
+			
+			// FPS cap
 			try {
 				Thread.sleep((1000 / FPSmax) - ((System.nanoTime() - nsCycleStart) / 1000000));
 			} catch (InterruptedException e) {
@@ -108,15 +122,12 @@ public class Game extends Canvas implements Runnable {
 
 	private void tick() {
 		handler.tick();
+		System.gc();
 		hud.tick();
 		
-		// Player should be the first object in this list
-		for(int i = 0; i < handler.loadedSprites.size(); i++) {
-			if(handler.loadedSprites.get(i).getId() == SpriteID.Player) {
-				camera.tick(handler.loadedSprites.get(i));
-				break;
-			}
-		}
+		// Player is last in list
+		if(handler.playerLoaded())
+			camera.tick(handler.getPlayer());
 	}
 
 	private void render() {
@@ -129,26 +140,41 @@ public class Game extends Canvas implements Runnable {
 		Graphics2D g2d = (Graphics2D) g;
 
 		// Background
-		g.setColor(Color.black);
+		g.setColor(Color.BLUE);
 		g.fillRect(0, 0, WIDTH, HEIGHT);
 		
-		// Anything between these two statements will be affected by the camera
+		// Affected by camera
 		g2d.translate(camera.getX(), camera.getY());
 
+		// Render all Sprites and Objects
 		handler.render(g);
+		System.gc();
 		
 		g2d.translate(-camera.getX(), -camera.getY());
+		// End affected by camera
 		
-		if(handler.loadedSprites.isEmpty() == false) {
-			hud.render(g, handler.loadedSprites.get(0));
-		}
+		// Player is last in list
+		if(handler.playerLoaded())
+			hud.render(g, handler.getPlayer());
 		
 		g.dispose();
 		bs.show();
 	}
 	
-	public static int clamp(int value, int min, int max) {
-		return Math.max(min, (Math.min(max, value)));
+	/**
+	 * Bounds a value between an Integer range.
+	 * 
+	 * @param n		the value to check
+	 * @param min	the minimum n can be
+	 * @param max	the maximum n can be
+	 * @return		the bounded value of n
+	 */
+	public static int clamp(int n, int min, int max) {
+		return Math.max(min, (Math.min(max, n)));
+	}
+	
+	public static int floatingYPosition(int idleCycles, int cycleOffset, int heightOffGround) {
+		return (int) (heightOffGround * (0.5 * Math.cos(2 * ((Game.currentTick + cycleOffset % idleCycles)) * Math.PI / idleCycles) + 0.5)) - heightOffGround;
 	}
 	
 	public static void main(String[] args) {

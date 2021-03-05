@@ -1,5 +1,6 @@
 
 public enum SpriteID {
 	Player(),
-	Enemy();
+	Slime(),
+	Coin();
 }

@@ -9,6 +9,6 @@ public class SpriteSheet {
 	}
 	
 	public BufferedImage grabImage(int col, int row, int width, int height, int colSize, int rowSize) {
-		return sprite.getSubimage((row * rowSize) - rowSize, (col * colSize) - colSize, width, height);
+		return sprite.getSubimage( (col * colSize) - colSize, (row * rowSize) - rowSize, width, height);
 	}
 }

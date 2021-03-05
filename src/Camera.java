@@ -2,6 +2,7 @@
 public class Camera {
 
 	private int x, y;
+	private final int facingBias = 100;
 	
 	public Camera(int x, int y) {
 		this.x = x;
@@ -9,8 +10,20 @@ public class Camera {
 	}
 	
 	public void tick(Sprite player) {
-		//x = -player.getX() + Game.WIDTH / 2 - (player.width / 2);
-		//y = -player.getY() + Game.HEIGHT / 2 - (player.width / 2);
+		
+		int endLocationX = -player.getxPrev() + Game.WIDTH / 2 - (player.width / 2) + ((player.facingRight) ? -facingBias : facingBias);
+		int endLocationY = -player.getyPrev() + Game.HEIGHT / 2;
+		
+		if (x == endLocationX && y == endLocationY) {
+			return;
+		}
+		
+		// High constant = slow camera adjustment
+		x += Math.ceil(Math.signum(endLocationX - x) * Math.abs(endLocationX - x) / (8)); // Left and Right
+		y += Math.ceil(Math.signum(endLocationY - y) * Math.abs(endLocationY - y) / ((endLocationY > y) ? 12 : 2)); // Jumping, Falling
+		
+		// Lowest object at y=500
+		y = Game.clamp(y, Game.HEIGHT - (500 + 200), 100000); // 500 is the floor
 	}
 
 	public int getX() {

@@ -8,32 +8,45 @@ public class Handler {
 	LinkedList<Object> loadedObjects = new LinkedList<>();
 
 	// Update every Sprite and Object
+	// checkForComodification potential error, list can't be modified during this loop
 	public void tick() {
-		for (Object tempObject : loadedObjects) {
+		LinkedList<Object> oCopy = loadedObjects;
+		for (Object tempObject : oCopy) {
 			tempObject.tick();
 		}
-		// Potential for error while removing an Entity during loop
-		for (Sprite tempSprite : loadedSprites) {
+		LinkedList<Sprite> sCopy = loadedSprites;
+		for (Sprite tempSprite : sCopy) {
 			tempSprite.tick();
 		}
 	}
 
 	// Render every Entity and Object to the screen
 	// Player is the first Sprite rendered
+	// TODO: Concurrent Modification
 	public void render(Graphics g) {
-		for (Object tempObject : loadedObjects) {
+		LinkedList<Object> oCopy = loadedObjects;
+		for (Object tempObject : oCopy) {
 			tempObject.render(g);
 		}
-		for (Sprite tempSprite : loadedSprites) {
+		LinkedList<Sprite> sCopy = loadedSprites;
+		for (Sprite tempSprite : sCopy) {
 			tempSprite.render(g);
 		}
+	}
+	
+	public boolean playerLoaded() {
+		return !loadedSprites.isEmpty() && loadedSprites.getLast().id == SpriteID.Player;
+	}
+	
+	public Sprite getPlayer() {
+		return (playerLoaded()) ? loadedSprites.getLast() : null;
 	}
 
 	public void addSprite(Sprite sprite) {
 		if (sprite.id == SpriteID.Player) {
-			this.loadedSprites.addFirst(sprite);
+			this.loadedSprites.addLast(sprite);
 		} else {
-			this.loadedSprites.add(sprite);
+			this.loadedSprites.addFirst(sprite);
 		}
 	}
 
