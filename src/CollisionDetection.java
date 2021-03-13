@@ -1,6 +1,6 @@
 import java.awt.Rectangle;
-import java.util.LinkedList;
 import java.awt.Point;
+import java.util.LinkedList;
 
 public class CollisionDetection {
 	
@@ -132,20 +132,13 @@ public class CollisionDetection {
 		}
 	}
 	
-	public static void collisionWithSprites(Sprite s, Handler handler) {
-		LinkedList<Sprite> remove = new LinkedList<>();
-		for (Sprite tempSprite : handler.loadedSprites) {
-			if (s.getHitbox().intersects(tempSprite.getCollider())) {
-				// Collision with enemy, replace 5 with enemyCollisionDamage
-				// Also need a timer so you aren't constantly taking collision damage
-				if (tempSprite.id == SpriteID.Coin) {
-					remove.add(tempSprite);
-				}
+	public static LinkedList<Sprite> collisionWithSprites(Rectangle r, Handler handler) {
+		LinkedList<Sprite> collidedWith = new LinkedList<>();
+		for (Sprite s : handler.loadedSprites) {
+			if (r.intersects(s.getCollider())) {
+				collidedWith.add(s);
 			}
 		}
-		
-		for (Sprite e : remove) {
-			handler.removeSprite(e);
-		}
+		return collidedWith;
 	}
 }

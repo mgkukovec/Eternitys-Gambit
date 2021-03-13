@@ -18,11 +18,11 @@ public class KeyInput extends KeyAdapter {
 
 	public static void updatePlayer(Player p) {
 		// Movement
-		if (KeyInput.isPressed(KeyEvent.VK_A)) {
+		if (KeyInput.isPressed(KeyEvent.VK_LEFT)) {
 			p.xVel += -p.speed;
 			p.facingRight = false;
 		}
-		if (KeyInput.isPressed(KeyEvent.VK_D)) {
+		if (KeyInput.isPressed(KeyEvent.VK_RIGHT)) {
 			p.xVel += p.speed;
 			p.facingRight = true;
 		}
@@ -30,6 +30,14 @@ public class KeyInput extends KeyAdapter {
 		if (KeyInput.isPressed(KeyEvent.VK_SPACE) && !wasPressedLast(KeyEvent.VK_SPACE)) {
 			p.tickBufferStart = Game.currentTick;
 		}
+		
+		// Abilities
+		if (KeyInput.isPressed(KeyEvent.VK_D) && !wasPressedLast(KeyEvent.VK_D)) {
+			if (p.ableToAttack()) {
+				p.tickOfLastAttack = Game.currentTick;
+			}
+		}
+		
 		// Debug
 		if (KeyInput.isPressed(KeyEvent.VK_F3)) {
 			PlayerHUD.toggleDebug();

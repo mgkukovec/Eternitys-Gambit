@@ -1,18 +1,20 @@
-import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
-public class Coin extends Sprite {
+public class Coin extends Item {
 
 	private int value;
 	private int idleCycleOffset;
+	private int bounceCount = 1;
 	
 	public Coin(int x, int y, SpriteID id, Handler handler, BufferedImage ss, int value) {
 		super(x, y, 45, 60, id, ss, handler);
+		hitbox = new Rectangle(x, y, 45, 45);
+		spriteModel = spriteSheet.grabImage(1, 1, hitbox.width, hitbox.height, 45, 45);
 		
-		spriteSheet = new SpriteSheet(ss);
-		spriteModel = spriteSheet.grabImage(1, 1, 45, 60, 45, 60);
+		// Shoot out in a random direction
+		xVel = (int) (Math.random() * (9 + 9)) - 9;
+		yVel = (int) (Math.random() * (20 - 20)) + 20;
 		
 		idleCycles = 30;
 		
@@ -20,46 +22,30 @@ public class Coin extends Sprite {
 		idleCycleOffset = (int) ((Math.random() * (idleCycles - 0)) + 0);
 		System.out.println(idleCycleOffset);
 		
-		yVelMax = 23;
-		hitbox = new Rectangle(x, y, 45, 45);
+		yVelMax = 35;
 	}
 
 	public void tick() {
-		this.setxPrev(x);
-		this.setyPrev(y);
+		super.tick();
 		
-		yVel = Game.clamp(yVel, -yVelMax, yVelMax);
-
-		// Can only move if jumping
+		// Slow down horizontal speed
+		if (Game.currentTick % 6 == 0) {
+			xVel -= Math.signum(xVel);
+		}
+		x += xVel;
+		
+		// Fall or bounce
 		if (standingOn == null) {
-			x += xVel;
 			y += yVel;
-		}
-
-		if (x != xPrev || y != yPrev) {
-			CollisionDetection.collisionWithObjects(this, handler);
-		}
-
-		if (standingOn == null) {
-			yVel += Game.gravity;
 		} else {
-			yVel = 0;
+			yVel = -(yVelMax / (bounceCount * 2));
+			standingOn = null;
+			bounceCount++;
 		}
+
+		doCollision();
 		
-		spriteModel = spriteSheet.grabImage(1, 1, 45, 60, 46, 60);
 		hitbox.x = x;
 		hitbox.y = y - Game.floatingYPosition(idleCycles, idleCycleOffset, 15);
-	}
-
-	public void render(Graphics g) {
-		
-		g.drawImage(spriteModel, hitbox.x, hitbox.y, width, height, null);
-		
-		if (PlayerHUD.debugMode) {
-			g.setColor(Color.white);
-			g.drawRect(x, y, width, height);
-			g.setColor(Color.red);
-			g.drawRect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
-		}
 	}
 }

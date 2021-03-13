@@ -9,13 +9,13 @@ public class Game extends Canvas implements Runnable {
 	public static int WIDTH = 1280;
 	public static int HEIGHT = WIDTH * 9 / 16;
 	public static int TPSmax = 30;
-	public static int FPSmax = 30;
+	public static int FPSmax = 60;
 	
 	public static int FPS = 0;
 	public static int TPS = 0;
 	public static int currentTick = 0;
 	
-	public static final int gravity = 3;
+	public static final int gravity = 4;
 	
 	private static final long serialVersionUID = -1442798787354930462L;
 	private Thread thread;
@@ -23,6 +23,7 @@ public class Game extends Canvas implements Runnable {
 	private Handler handler;
 	private PlayerHUD hud;
 	public BufferedImage playerSS, platformSS;
+	public BufferedImage swordSS;
 	public BufferedImage slimeSS, coinSS;
 	private Camera camera;
 	private Window window;
@@ -36,21 +37,24 @@ public class Game extends Canvas implements Runnable {
 		window = new Window(WIDTH, HEIGHT, "Miss Adventure", this);
 		
 		BufferedImageLoader imageLoader = new BufferedImageLoader();
-		playerSS = imageLoader.loadImage("/spriteSheet.png");
+		playerSS = imageLoader.loadImage("/player.png");
 		platformSS = imageLoader.loadImage("/Rocks.png");
 		slimeSS = imageLoader.loadImage("/SlimeSheet.png");
 		coinSS = imageLoader.loadImage("/coins.png");
 		
-		handler.addSprite(new Player(200, 100, SpriteID.Player, handler, playerSS));
+		//handler.addSprite(new Player(200, 100, SpriteID.Player, handler, playerSS));
+		handler.addPlayer(new Player(600, 410, SpriteID.Player, handler, playerSS));
 		handler.addSprite(new Slime(600, 100, SpriteID.Slime, handler, slimeSS));
-		handler.addSprite(new Coin(100, 100, SpriteID.Coin, handler, coinSS, 50));
-		handler.addSprite(new Coin(110, 100, SpriteID.Coin, handler, coinSS, 50));
-		handler.addSprite(new Coin(133, 100, SpriteID.Coin, handler, coinSS, 50));
+		handler.addSprite(new Coin(300, 410, SpriteID.Coin, handler, coinSS, 50));
+		handler.addSprite(new Coin(310, 410, SpriteID.Coin, handler, coinSS, 50));
+		handler.addSprite(new Coin(333, 410, SpriteID.Coin, handler, coinSS, 50));
 		handler.addObject(new BasicPlatform(50, 500, 480, 270, ObjectID.BasicPlatform, platformSS));
 		handler.addObject(new BasicPlatform(50 + 480, 500, 480, 270, ObjectID.BasicPlatform, platformSS));
 		handler.addObject(new BasicPlatform(50 + (480 * 2), 500, 480, 270, ObjectID.BasicPlatform, platformSS));
 		handler.addObject(new TestPlatform(50 + 480, 145, 480, 30, ObjectID.BasicPlatform));
-		handler.addObject(new TestPlatform(1100, 200, 20, 300, ObjectID.BasicPlatform));
+		handler.addObject(new TestPlatform(50 + (480 * 2) + 200, -200, 300, 30, ObjectID.BasicPlatform));
+		handler.addObject(new TestPlatform(50 + 480 + 100, -500, 300, 30, ObjectID.BasicPlatform));
+		handler.addObject(new TestPlatform(-200, -800, 1000, 30, ObjectID.BasicPlatform));
 	}
 
 	public synchronized void start() {
@@ -114,7 +118,7 @@ public class Game extends Canvas implements Runnable {
 			} catch (InterruptedException e) {
 				System.out.println("Thread was interrupted.");
 			} catch (IllegalArgumentException e) {
-				System.out.println("FPS dropped below max.");
+				//System.out.println("FPS dropped below max.");
 			}
 		}
 		stop();
@@ -124,10 +128,9 @@ public class Game extends Canvas implements Runnable {
 		handler.tick();
 		System.gc();
 		hud.tick();
-		
-		// Player is last in list
-		if(handler.playerLoaded())
-			camera.tick(handler.getPlayer());
+		if (handler.player != null) {
+			camera.tick(handler.player);
+		}
 	}
 
 	private void render() {
@@ -154,8 +157,7 @@ public class Game extends Canvas implements Runnable {
 		// End affected by camera
 		
 		// Player is last in list
-		if(handler.playerLoaded())
-			hud.render(g, handler.getPlayer());
+		hud.render(g, handler.player);
 		
 		g.dispose();
 		bs.show();

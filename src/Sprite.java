@@ -13,8 +13,8 @@ public abstract class Sprite {
 	protected BufferedImage spriteModel;
 	protected SpriteSheet spriteSheet;
 	
-	protected int health;
 	protected int bodyDamage;
+	protected int health;
 	protected SpriteID id;
 	protected int speed;
 	protected int idleCycles;
@@ -100,5 +100,11 @@ public abstract class Sprite {
 	
 	public Rectangle getHitbox() {
 		return hitbox;
+	}
+	
+	public void doCollision() {
+		if (x != xPrev || y != yPrev) {
+			CollisionDetection.collisionWithObjects(this, handler);
+		}
 	}
 }

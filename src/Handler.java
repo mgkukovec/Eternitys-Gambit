@@ -1,22 +1,27 @@
 import java.awt.Graphics;
-import java.util.LinkedList;
+import java.util.Iterator;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Handler {
 
-	// Player is always first
-	LinkedList<Sprite> loadedSprites = new LinkedList<>();
-	LinkedList<Object> loadedObjects = new LinkedList<>();
+	Player player;
+	CopyOnWriteArrayList<Sprite> loadedSprites = new CopyOnWriteArrayList<>();
+	CopyOnWriteArrayList<Object> loadedObjects = new CopyOnWriteArrayList<>();
 
 	// Update every Sprite and Object
 	// checkForComodification potential error, list can't be modified during this loop
 	public void tick() {
-		LinkedList<Object> oCopy = loadedObjects;
-		for (Object tempObject : oCopy) {
-			tempObject.tick();
+		if (player != null) {
+			player.tick();
 		}
-		LinkedList<Sprite> sCopy = loadedSprites;
-		for (Sprite tempSprite : sCopy) {
-			tempSprite.tick();
+		Iterator<Object> objectIterator = loadedObjects.iterator();
+		while (objectIterator.hasNext()) {
+			objectIterator.next().tick();
+		}
+		
+		Iterator<Sprite> spriteIterator = loadedSprites.iterator();
+		while (spriteIterator.hasNext()) {
+			spriteIterator.next().tick();
 		}
 	}
 
@@ -24,30 +29,26 @@ public class Handler {
 	// Player is the first Sprite rendered
 	// TODO: Concurrent Modification
 	public void render(Graphics g) {
-		LinkedList<Object> oCopy = loadedObjects;
-		for (Object tempObject : oCopy) {
-			tempObject.render(g);
+		Iterator<Object> objectIterator = loadedObjects.iterator();
+		while (objectIterator.hasNext()) {
+			objectIterator.next().render(g);
 		}
-		LinkedList<Sprite> sCopy = loadedSprites;
-		for (Sprite tempSprite : sCopy) {
-			tempSprite.render(g);
+		
+		Iterator<Sprite> spriteIterator = loadedSprites.iterator();
+		while (spriteIterator.hasNext()) {
+			spriteIterator.next().render(g);
+		}
+		if (player != null) {
+			player.render(g);
 		}
 	}
 	
-	public boolean playerLoaded() {
-		return !loadedSprites.isEmpty() && loadedSprites.getLast().id == SpriteID.Player;
-	}
-	
-	public Sprite getPlayer() {
-		return (playerLoaded()) ? loadedSprites.getLast() : null;
+	public void addPlayer(Player p) {
+		player = p;
 	}
 
 	public void addSprite(Sprite sprite) {
-		if (sprite.id == SpriteID.Player) {
-			this.loadedSprites.addLast(sprite);
-		} else {
-			this.loadedSprites.addFirst(sprite);
-		}
+		this.loadedSprites.add(sprite);
 	}
 
 	public void removeSprite(Sprite sprite) {
